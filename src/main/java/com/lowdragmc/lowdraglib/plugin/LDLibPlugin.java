@@ -5,11 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * @author KilaBash
- * @date 2023/6/21
- * @implNote LDLibPlugin
- */
+// This is from GregTech Modern / JEI
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface LDLibPlugin {

@@ -4,11 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
-/**
- * @author KilaBash
- * @date 2023/3/23
- * @implNote Submap
- */
+// This is from ConnectedTexturesMod.
 @Getter
 @AllArgsConstructor
 public class Submap implements ISubmap {

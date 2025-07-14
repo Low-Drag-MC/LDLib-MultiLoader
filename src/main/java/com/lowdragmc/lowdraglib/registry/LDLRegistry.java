@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.*;
 
+// Really? no credit where credit is due? This is from GregTech Modern.
 public abstract class LDLRegistry<K, V> implements Iterable<V> {
     public static final Map<ResourceLocation, LDLRegistry<?, ?>> REGISTERED = new LinkedHashMap<>();
 
@@ -191,13 +192,20 @@ public abstract class LDLRegistry<K, V> implements Iterable<V> {
 
         @Override
         public Codec<V> codec() {
-            return Codec.STRING.flatXmap(str -> Optional.ofNullable(this.get(str)).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown registry key in " + this.registryName + ": " + str)), obj -> Optional.ofNullable(this.getKey(obj)).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown registry element in " + this.registryName + ": " + obj)));
+            return Codec.STRING.flatXmap(
+                    str -> Optional.ofNullable(this.get(str))
+                            .map(DataResult::success)
+                            .orElseGet(() -> DataResult.error(() -> "Unknown registry key in " + this.registryName + ": " + str)),
+                    obj -> Optional.ofNullable(this.getKey(obj))
+                            .map(DataResult::success)
+                            .orElseGet(() -> DataResult.error(() -> "Unknown registry element in " + this.registryName + ": " + obj)));
         }
 
         @Override
         public Codec<Optional<V>> optionalCodec() {
             return Codec.STRING.flatXmap(str -> DataResult.success(getOptional(str)),
-                    optional -> optional.map(obj -> DataResult.success(this.getKey(obj))).orElseGet(() -> DataResult.error(() -> "registry key in " + this.registryName)));
+                    optional -> optional.map(obj -> DataResult.success(this.getKey(obj)))
+                            .orElseGet(() -> DataResult.error(() -> "Unknown registry key in " + this.registryName)));
         }
 
         public StreamCodec<RegistryFriendlyByteBuf, V> streamCodec() {

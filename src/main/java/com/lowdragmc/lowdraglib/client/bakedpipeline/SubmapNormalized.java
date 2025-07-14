@@ -2,11 +2,7 @@ package com.lowdragmc.lowdraglib.client.bakedpipeline;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
-/**
- * @author KilaBash
- * @date 2023/3/23
- * @implNote SubmapNormalized
- */
+// This is from ConnectedTexturesMod.
 public class SubmapNormalized implements ISubmap {
     private static final float FACTOR = 16f;
 

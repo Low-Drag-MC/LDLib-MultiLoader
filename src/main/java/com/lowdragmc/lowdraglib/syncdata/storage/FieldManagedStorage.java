@@ -4,6 +4,7 @@ import com.lowdragmc.lowdraglib.LDLib;
 import com.lowdragmc.lowdraglib.syncdata.*;
 import com.lowdragmc.lowdraglib.syncdata.annotation.RequireRerender;
 import com.lowdragmc.lowdraglib.syncdata.annotation.UpdateListener;
+import com.lowdragmc.lowdraglib.syncdata.blockentity.IManagedBlockEntity;
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedKey;
 import com.lowdragmc.lowdraglib.syncdata.ref.IRef;
 import net.minecraft.Util;
@@ -191,9 +192,8 @@ public class FieldManagedStorage implements IManagedStorage {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void initBlockEntityManagedFeature() {
-        if (owner instanceof IBlockEntityManaged managed) {
+        if (owner instanceof IManagedBlockEntity managed) {
             for (IRef<?> syncField : getSyncFields()) {
                 var rawField = syncField.getKey().getRawField();
                 if (rawField.isAnnotationPresent(RequireRerender.class)) {

@@ -8,11 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nonnull;
 
-/**
- * @author KilaBash
- * @date 2023/3/24
- * @implNote ICTMPredicate
- */
+// This is from ConnectedTexturesMod.
 public interface ICTMPredicate {
     ICTMPredicate DEFAULT = (level, state, pos, sourceState, sourcePos, side) -> {
         var stateAppearance = state.getAppearance(level, pos, side, sourceState, sourcePos);

@@ -20,6 +20,7 @@ import java.lang.Math;
 
 import static net.minecraft.client.renderer.block.model.FaceBakery.calculateFacing;
 
+// This is just the vanilla FaceBakery with no changes
 public class FaceQuadBakery {
     public static final int VERTEX_INT_SIZE = 8;
     private static final float RESCALE_22_5 = 1.0F / (float)Math.cos((float) (Math.PI / 8)) - 1.0F;
@@ -67,7 +68,7 @@ public class FaceQuadBakery {
             QuadTransformers.applyingLightmap(data.blockLight(), data.skyLight()).processInPlace(quad);
             QuadTransformers.applyingColor(data.color()).processInPlace(quad);
         }
-        LDLibQuadTransformers.settingEmissivity(emissivity).processInPlace(quad);
+        QuadTransformers.settingEmissivity(emissivity).processInPlace(quad);
 
         return quad;
     }

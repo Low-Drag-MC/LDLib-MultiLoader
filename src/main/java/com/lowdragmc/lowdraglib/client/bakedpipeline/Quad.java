@@ -21,11 +21,7 @@ import java.util.*;
 
 import static net.neoforged.neoforge.client.model.IQuadTransformer.*;
 
-/**
- * @author KilaBash
- * @date 2023/3/23
- * @implNote Quad
- */
+// This is from ConnectedTexturesMod.
 @ParametersAreNonnullByDefault
 @ToString(of = { "vertPos", "vertUv" })
 public class Quad {
@@ -388,7 +384,7 @@ public class Quad {
                         break;
                     case COLOR:
                         int[] c = getBuilder().colors[v];
-                        builder.color(c[0], c[1], c[2], c[3]);
+                        builder.setColor(c[0], c[1], c[2], c[3]);
                         break;
                     case UV:
                         if (ele.index() == 2) {

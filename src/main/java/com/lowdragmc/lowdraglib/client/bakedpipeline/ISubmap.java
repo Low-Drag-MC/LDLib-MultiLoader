@@ -2,11 +2,7 @@ package com.lowdragmc.lowdraglib.client.bakedpipeline;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
-/**
- * @author KilaBash
- * @date 2023/3/24
- * @implNote ISubmap
- */
+// This is from ConnectedTexturesMod.
 public interface ISubmap {
     float getYOffset();
 

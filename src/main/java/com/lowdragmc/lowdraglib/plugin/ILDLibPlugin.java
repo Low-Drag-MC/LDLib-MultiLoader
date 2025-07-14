@@ -1,10 +1,6 @@
 package com.lowdragmc.lowdraglib.plugin;
 
-/**
- * @author KilaBash
- * @date 2023/3/17
- * @implNote ILDLibPlugin
- */
+// This is from GregTech Modern (or JEI, where I got the basic implementation from)
 public interface ILDLibPlugin {
     void onLoad();
 }

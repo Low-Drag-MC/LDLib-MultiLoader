@@ -7,11 +7,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import javax.annotation.Nonnull;
 
-/**
- * @author KilaBash
- * @date 2023/3/23
- * @implNote ConnectInfo
- */
+// This is from ConnectedTexturesMod.
 public enum Connection {
     UP(Direction.UP),
     DOWN(Direction.DOWN),

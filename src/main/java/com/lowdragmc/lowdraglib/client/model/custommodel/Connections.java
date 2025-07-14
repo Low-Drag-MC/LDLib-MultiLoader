@@ -9,11 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/**
- * @author KilaBash
- * @date 2023/3/24
- * @implNote Connections
- */
+// This is from ConnectedTexturesMod.
 public class Connections {
 
     /** Some hardcoded offset values for the different corner indeces */
