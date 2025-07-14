@@ -3,6 +3,7 @@ package com.lowdragmc.lowdraglib.graphprocessor.data;
 import com.lowdragmc.lowdraglib.LDLib;
 import com.lowdragmc.lowdraglib.graphprocessor.data.parameter.ExposedParameter;
 import com.lowdragmc.lowdraglib.graphprocessor.data.trigger.TriggerLink;
+import com.lowdragmc.lowdraglib.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib.utils.TypeAdapter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -17,7 +18,7 @@ import oshi.util.tuples.Pair;
 import java.util.*;
 import java.util.function.Consumer;
 
-public class BaseGraph implements INBTSerializable<CompoundTag> {
+public class BaseGraph implements IPersistedSerializable {
     public final HashSet<UUID> usedGUIDs = new HashSet<>();
 
     public UUID newGUID() {
@@ -304,7 +305,7 @@ public class BaseGraph implements INBTSerializable<CompoundTag> {
 
     @Override
     public CompoundTag serializeNBT(HolderLookup.@NotNull Provider provider) {
-        var tag = new CompoundTag();
+        var tag = IPersistedSerializable.super.serializeNBT(provider);
         var nodes = new ListTag();
         for (var node : this.nodes) {
             nodes.add(node.serializeWrapper());
@@ -345,6 +346,7 @@ public class BaseGraph implements INBTSerializable<CompoundTag> {
             this.nodes.add(BaseNode.createFromTag(nodes.getCompound(i)));
         }
         // load edges
+        IPersistedSerializable.super.deserializeNBT(provider, tag);
         var edges = tag.getList("edges", Tag.TAG_COMPOUND);
         for (int i = 0; i < edges.size(); i++) {
             var edge = new PortEdge();

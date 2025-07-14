@@ -611,23 +611,23 @@ public class TankWidget extends Widget implements IRecipeIngredientSlot, IConfig
 
     @OnlyIn(Dist.CLIENT)
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (isMouseOverElement(mouseX, mouseY)) {
-                if (allowClickDrained || allowClickFilled) {
-                    if (button == 0) {
-                        if (getFluidHandler(gui.entityPlayer, gui.getModularUIContainer()) != null) {
-                            boolean isShiftKeyDown = isShiftDown();
-                            writeClientAction(1, writer -> writer.writeBoolean(isShiftKeyDown));
-                            playButtonClickSound();
-                            return true;
-                        }
-                    }
-                }
-                if (LDLib.isEmiLoaded()) {
-                    if (EMICallWrapper.mouseClick(getXEICurrentIngredient(), button)) {
+        if (isMouseOverElement(mouseX, mouseY)) {
+            if (allowClickDrained || allowClickFilled) {
+                if (button == 0) {
+                    if (getFluidHandler(gui.entityPlayer, gui.getModularUIContainer()) != null) {
+                        boolean isShiftKeyDown = isShiftDown();
+                        writeClientAction(1, writer -> writer.writeBoolean(isShiftKeyDown));
+                        playButtonClickSound();
                         return true;
                     }
                 }
             }
+            if (LDLib.isEmiLoaded()) {
+                if (EMICallWrapper.mouseClick(getXEICurrentIngredient(), button)) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -734,16 +734,14 @@ public class TankWidget extends Widget implements IRecipeIngredientSlot, IConfig
 
         public static boolean mouseClick(Object ingredient, int button) {
             if (ingredient instanceof EmiStack emiStack) {
-                EmiScreenManager.stackInteraction(new EmiStackInteraction(emiStack), (bind) -> bind.matchesMouse(button));
-                return true;
+                return EmiScreenManager.stackInteraction(new EmiStackInteraction(emiStack), (bind) -> bind.matchesMouse(button));
             }
             return false;
         }
 
         public static boolean keyPressed(Object ingredient, int keyCode, int scanCode, int modifiers) {
             if (ingredient instanceof EmiStack emiStack) {
-                EmiScreenManager.stackInteraction(new EmiStackInteraction(emiStack), (bind) -> bind.matchesKey(keyCode, scanCode));
-                return true;
+                return EmiScreenManager.stackInteraction(new EmiStackInteraction(emiStack), (bind) -> bind.matchesKey(keyCode, scanCode));
             }
             return false;
         }

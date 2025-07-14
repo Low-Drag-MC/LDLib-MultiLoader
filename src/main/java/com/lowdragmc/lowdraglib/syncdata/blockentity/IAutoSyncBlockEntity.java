@@ -32,7 +32,7 @@ public interface IAutoSyncBlockEntity extends IManagedBlockEntity {
         if (!(level instanceof ServerLevel serverLevel)) {
             throw new IllegalStateException("Cannot sync from client");
         }
-        for (IRef field : this.getNonLazyFields()) {
+        for (IRef<?> field : this.getNonLazyFields()) {
             field.update();
         }
         var packet = SPacketAutoSyncBlockEntity.of(this, force);
@@ -42,7 +42,7 @@ public interface IAutoSyncBlockEntity extends IManagedBlockEntity {
 
     default void defaultServerTick() {
         if (!(getSelf().getLevel() instanceof ServerLevel serverLevel)) return;
-        for (IRef field : getNonLazyFields()) {
+        for (IRef<?> field : getNonLazyFields()) {
             field.update();
         }
         if (getRootStorage().hasDirtySyncFields()) {

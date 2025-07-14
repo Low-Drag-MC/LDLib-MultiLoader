@@ -214,6 +214,7 @@
   "widget.container.fluid_slot": "Fluid Slot",
   "widget.container.phantom_item_slot": "Phantom Item Slot",
   "widget.container.phantom_fluid_slot": "Phantom Fluid Slot",
+  "widget.container.phantom_tank_slot": "Phantom Tank Slot",
   "widget.custom.player_inventory": "Player Inventory",
 
   "history_view": "History View",

@@ -83,7 +83,7 @@ public class ButtonWidget extends Widget implements IConfigurableWidget {
     @Override
     @OnlyIn(Dist.CLIENT)
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (isMouseOverElement(mouseX, mouseY) && button == 0) {
+        if (isMouseOverElement(mouseX, mouseY)) {
             isClicked = true;
             ClickData clickData = new ClickData();
             writeClientAction(1, clickData::writeToBuf);

@@ -601,13 +601,13 @@ public class DraggableScrollableWidgetGroup extends WidgetGroup {
     }
 
     @Override
-    public void deserializeAdditionalNBT(Tag nbt, HolderLookup.Provider provider) {
+    public void deserializeAdditionalNBT(Tag nbt, HolderLookup.@NotNull Provider provider) {
         super.deserializeAdditionalNBT(nbt, provider);
         if (nbt instanceof CompoundTag tag) {
-            this.scrollXOffset= tag.getInt("scrollXOffset");
-            this.scrollYOffset= tag.getInt("scrollYOffset");
-            this.maxHeight= tag.getInt("maxHeight");
-            this.maxWidth= tag.getInt("maxWidth");
+            this.scrollXOffset = tag.getInt("scrollXOffset");
+            this.scrollYOffset = tag.getInt("scrollYOffset");
+            this.maxHeight = tag.getInt("maxHeight");
+            this.maxWidth = tag.getInt("maxWidth");
             isComputingMax = true;
             for (Widget widget : widgets) {
                 widget.addSelfPosition(-scrollXOffset, -scrollYOffset);

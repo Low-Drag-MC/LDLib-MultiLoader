@@ -51,10 +51,11 @@ repositories {
     }
     maven { url = "https://jitpack.io/" } // Mixin Extras, Fabric ASM
     maven {
-        // saps.dev Maven (KubeJS and Rhino)
-        url = "https://maven.saps.dev/minecraft"
+        // latvian.dev Maven (KubeJS and Rhino)
+        url = "https://maven.latvian.dev/releases"
         content {
             includeGroup "dev.latvian.mods"
+            includeGroup "dev.latvian.apps"
         }
     }
     maven {
@@ -158,16 +159,13 @@ dependencies {
     }
 
     //oculus
-    compileOnly("maven.modrinth:embeddium:${embeddium_version}")
-    compileOnly("maven.modrinth:oculus:${oculus_version}")
+    compileOnly("maven.modrinth:sodium:${sodium_version}-neoforge")
+    compileOnly("maven.modrinth:iris:${iris_version}-neoforge")
 
 
     // lombok
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
-
-    // Yoga
-    implementation 'org.lwjgl:lwjgl-yoga:3.3.6'
 }
 
 tasks.withType(ProcessResources).configureEach {

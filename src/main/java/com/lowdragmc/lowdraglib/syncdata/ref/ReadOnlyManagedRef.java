@@ -118,98 +118,98 @@ public abstract class ReadOnlyManagedRef<TYPE> extends Ref<TYPE> {
 
 
     @Override
-    public final <T> T readInitialSync(DynamicOps<T> op) {
+    public final <T> T readInitialSync(DynamicOps<T> ops) {
         if (isReadOnlyManaged()) {
             var value = readRaw();
             if (value == null) {
-                return LDLibExtraCodecs.createStringNull(op);
+                return LDLibExtraCodecs.createStringNull(ops);
             }
             var field = getReadOnlyVar();
             assert field.getManagedVar() != null;
-            return op.mapBuilder()
-                    .add("uid", NbtOps.INSTANCE.convertMap(op, field.getManagedVar().serializeUid(value)))
-                    .add("payload", readReadOnlySync(op))
-                    .build(op.empty()).getOrThrow();
+            return ops.mapBuilder()
+                    .add("uid", NbtOps.INSTANCE.convertMap(ops, field.getManagedVar().serializeUid(value)))
+                    .add("payload", readReadOnlySync(ops))
+                    .build(ops.empty()).getOrThrow();
         } else {
-            return readReadOnlySync(op);
+            return readReadOnlySync(ops);
         }
     }
 
-    public  <T> T readReadOnlySync(DynamicOps<T> op) {
-        return super.readInitialSync(op);
+    public  <T> T readReadOnlySync(DynamicOps<T> ops) {
+        return super.readInitialSync(ops);
     }
 
     @Override
-    public final <T> void writeInitialSync(DynamicOps<T> op, T payload) {
+    public final <T> void writeInitialSync(DynamicOps<T> ops, T payload) {
         if (isReadOnlyManaged()) {
             var field = getReadOnlyVar();
             assert field.getManagedVar() != null;
-            if (LDLibExtraCodecs.isEmptyOrStringNull(op, payload)) {
+            if (LDLibExtraCodecs.isEmptyOrStringNull(ops, payload)) {
                 field.set(null);
             } else {
-                var uid = op.get(payload, "uid").result().map(data -> op.convertTo(NbtOps.INSTANCE, data)).map(CompoundTag.class::cast).orElseThrow();
+                var uid = ops.get(payload, "uid").result().map(data -> ops.convertTo(NbtOps.INSTANCE, data)).map(CompoundTag.class::cast).orElseThrow();
                 var value = readRaw();
                 var managedVar = field.getManagedVar();
                 if (value == null || !managedVar.serializeUid(value).equals(uid)) {
                     value = managedVar.deserializeUid(uid);
                     field.set(value);
                 }
-                writeReadOnlySync(op, op.get(payload, "payload").result().orElse(op.empty()));
+                writeReadOnlySync(ops, ops.get(payload, "payload").result().orElse(ops.empty()));
             }
         } else {
-            writeReadOnlySync(op, payload);
+            writeReadOnlySync(ops, payload);
         }
     }
 
-    public <T> void writeReadOnlySync(DynamicOps<T> op, T payload) {
-        super.writeInitialSync(op, payload);
+    public <T> void writeReadOnlySync(DynamicOps<T> ops, T payload) {
+        super.writeInitialSync(ops, payload);
     }
 
     @Override
-    public final <T> T readPersisted(DynamicOps<T> op) {
+    public final <T> T readPersisted(DynamicOps<T> ops) {
         if (isReadOnlyManaged()) {
             var field = getReadOnlyVar();
             assert field.getManagedVar() != null;
             var value = readRaw();
             if (value == null) {
-                return LDLibExtraCodecs.createStringNull(op);
+                return LDLibExtraCodecs.createStringNull(ops);
             }
-            return op.mapBuilder()
-                    .add("uid", NbtOps.INSTANCE.convertMap(op, field.getManagedVar().serializeUid(value)))
-                    .add("payload", readReadOnlyPersisted(op))
-                    .build(op.empty()).getOrThrow();
+            return ops.mapBuilder()
+                    .add("uid", NbtOps.INSTANCE.convertMap(ops, field.getManagedVar().serializeUid(value)))
+                    .add("payload", readReadOnlyPersisted(ops))
+                    .build(ops.empty()).getOrThrow();
         } else {
-            return readReadOnlyPersisted(op);
+            return readReadOnlyPersisted(ops);
         }
     }
 
-    public <T> T readReadOnlyPersisted(DynamicOps<T> op) {
-        return super.readPersisted(op);
+    public <T> T readReadOnlyPersisted(DynamicOps<T> ops) {
+        return super.readPersisted(ops);
     }
 
     @Override
-    public final <T> void writePersisted(DynamicOps<T> op, T payload) {
+    public final <T> void writePersisted(DynamicOps<T> ops, T payload) {
         if (isReadOnlyManaged()) {
             var field = getReadOnlyVar();
             assert field.getManagedVar() != null;
-            if (LDLibExtraCodecs.isEmptyOrStringNull(op, payload)) {
+            if (LDLibExtraCodecs.isEmptyOrStringNull(ops, payload)) {
                 field.set(null);
             } else {
-                var uid = op.get(payload, "uid").result().map(data -> op.convertTo(NbtOps.INSTANCE, data)).map(CompoundTag.class::cast).orElseThrow();
+                var uid = ops.get(payload, "uid").result().map(data -> ops.convertTo(NbtOps.INSTANCE, data)).map(CompoundTag.class::cast).orElseThrow();
                 var value = readRaw();
                 var managedVar = field.getManagedVar();
                 if (value == null || !managedVar.serializeUid(value).equals(uid)) {
                     value = managedVar.deserializeUid(uid);
                     field.set(value);
                 }
-                writeReadOnlyPersisted(op, op.get(payload, "payload").result().orElse(op.empty()));
+                writeReadOnlyPersisted(ops, ops.get(payload, "payload").result().orElse(ops.empty()));
             }
         } else {
-            writeReadOnlyPersisted(op, payload);
+            writeReadOnlyPersisted(ops, payload);
         }
     }
 
-    public  <T> void writeReadOnlyPersisted(DynamicOps<T> op, T payload) {
-        super.writePersisted(op, payload);
+    public  <T> void writeReadOnlyPersisted(DynamicOps<T> ops, T payload) {
+        super.writePersisted(ops, payload);
     }
 }

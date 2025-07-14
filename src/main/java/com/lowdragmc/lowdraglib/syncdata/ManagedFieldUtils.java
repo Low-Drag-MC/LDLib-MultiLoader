@@ -32,7 +32,6 @@ public class ManagedFieldUtils {
         return managedFields.toArray(ManagedKey[]::new);
     }
 
-
     public static Map<String, RPCMethodMeta> getRPCMethods(Class<?> clazz) {
         Map<String, RPCMethodMeta> result = new HashMap<>();
         for (Method method : clazz.getDeclaredMethods()) {

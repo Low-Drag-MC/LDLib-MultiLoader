@@ -19,6 +19,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -191,7 +192,7 @@ public class AccessorRegistries {
         registerAccessor(RegistryAccessor.of((Class<EntityType<?>>)(Class<?>) EntityType.class, BuiltInRegistries.ENTITY_TYPE));
         registerAccessor(RegistryAccessor.of((Class<BlockEntityType<?>>)(Class<?>)BlockEntityType.class, BuiltInRegistries.BLOCK_ENTITY_TYPE));
         registerAccessor(CustomDirectAccessor.builder(UUID.class)
-                .codec(LDLibExtraCodecs.UUID)
+                .codec(UUIDUtil.STRING_CODEC)
                 .streamCodec(StreamCodec.of(
                         (byteBuf, uuid) -> {
                             byteBuf.writeLong(uuid.getMostSignificantBits());

@@ -180,14 +180,14 @@ public class TabContainer extends WidgetGroup {
     }
 
     @Override
-    public void deserializeAdditionalNBT(Tag nbt, HolderLookup.Provider provider) {
+    public void deserializeAdditionalNBT(Tag nbt, HolderLookup.@NotNull Provider provider) {
         if (nbt instanceof CompoundTag tag) {
             var tabs = tag.getList("tabs", Tag.TAG_COMPOUND);
             for (Tag tabTag : tabs) {
                 if (tabTag instanceof CompoundTag tab) {
                     TabButton button = new TabButton();
                     button.deserializeNBT(provider, tab.getCompound("button"));
-                    var widget = IConfigurableWidget.deserializeWrapper(tab.getCompound("group"));
+                    var widget = IConfigurableWidget.deserializeWrapper(tab.getCompound("group"), provider);
                     if (widget != null && widget.widget() instanceof WidgetGroup group) {
                         addTab(button, group);
                     }

@@ -11,6 +11,7 @@ import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.math.Position;
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.world.entity.player.Player;
 
 /**
  * @author KilaBash

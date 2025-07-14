@@ -1,6 +1,8 @@
 package com.lowdragmc.lowdraglib.syncdata.blockentity;
 
 import com.lowdragmc.lowdraglib.utils.TagUtils;
+
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
@@ -12,56 +14,44 @@ import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
  */
 public interface IAutoPersistBlockEntity extends IManagedBlockEntity {
 
-    default void saveManagedPersistentData(CompoundTag tag, boolean forDrop) {
+    default void saveManagedPersistentData(CompoundTag tag, HolderLookup.Provider provider, boolean forDrop) {
         var persistedFields = getRootStorage().getPersistedFields();
-        var managedTag = new CompoundTag();
         for (var persistedField : persistedFields) {
             if (forDrop && !persistedField.getKey().isDrop()) {
                 continue;
             }
             var data = persistedField.readPersisted(NbtOps.INSTANCE);
             if (data != null) {
-                TagUtils.setTagExtended(managedTag, persistedField.getPersistedKey(), data);
+                TagUtils.setTagExtended(tag, persistedField.getPersistedKey(), data);
             }
         }
-
-        var customTag = new CompoundTag();
-        saveCustomPersistedData(customTag, forDrop);
-
-        if (!managedTag.isEmpty()) {
-            tag.put("managed", managedTag);
-        }
-        if (!customTag.isEmpty()) {
-            managedTag.put("custom", customTag);
-        }
+        saveCustomPersistedData(tag, provider, forDrop);
     }
 
-    default void loadManagedPersistentData(CompoundTag tag) {
+    default void loadManagedPersistentData(CompoundTag tag, HolderLookup.Provider provider) {
         var refs = getRootStorage().getPersistedFields();
-        var managedTag = tag.getCompound("managed");
         for (var ref : refs) {
             var key = ref.getPersistedKey();
-            var data = TagUtils.getTagExtended(managedTag, key);
+            var data = TagUtils.getTagExtended(tag, key);
             if (data != null) {
                 ref.writePersisted(NbtOps.INSTANCE, data);
             }
         }
-        loadCustomPersistedData(tag.getCompound("custom"));
+        loadCustomPersistedData(tag, provider);
     }
 
 
     /**
      * write custom data to the save
      */
-    default void saveCustomPersistedData(CompoundTag tag, boolean forDrop) {
+    default void saveCustomPersistedData(CompoundTag tag, HolderLookup.Provider provider, boolean forDrop) {
 
     }
 
     /**
      * read custom data from the save
      */
-    default void loadCustomPersistedData(CompoundTag tag) {
+    default void loadCustomPersistedData(CompoundTag tag, HolderLookup.Provider provider) {
+
     }
-
-
 }

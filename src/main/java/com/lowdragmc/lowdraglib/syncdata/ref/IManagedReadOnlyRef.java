@@ -65,51 +65,51 @@ public class IManagedReadOnlyRef extends ReadOnlyRef<IManaged> {
     }
 
     @Override
-    public <T> T readReadOnlyPersisted(DynamicOps<T> op) {
+    public <T> T readReadOnlyPersisted(DynamicOps<T> ops) {
         var persistedFields = getManaged().getSyncStorage().getPersistedFields();
         var map = new HashMap<T, T>();
         for (IRef<?> persistedField : persistedFields) {
             var key = persistedField.getPersistedKey();
-            var data = persistedField.readPersisted(op);
-            map.put(op.createString(key), data);
+            var data = persistedField.readPersisted(ops);
+            map.put(ops.createString(key), data);
         }
-        return op.createMap(map);
+        return ops.createMap(map);
     }
 
     @Override
-    public <T> void writeReadOnlyPersisted(DynamicOps<T> op, T payload) {
+    public <T> void writeReadOnlyPersisted(DynamicOps<T> ops, T payload) {
         var persistedFields = getManaged().getSyncStorage().getPersistedFields();
-        var map = op.getMap(payload).getOrThrow();
+        var map = ops.getMap(payload).getOrThrow();
         for (IRef<?> persistedField : persistedFields) {
             var key = persistedField.getPersistedKey();
-            var data = map.get(op.createString(key));
+            var data = map.get(ops.createString(key));
             if (data != null) {
-                persistedField.writePersisted(op, data);
+                persistedField.writePersisted(ops, data);
             }
         }
     }
 
     @Override
-    public <T> T readReadOnlySync(DynamicOps<T> op) {
+    public <T> T readReadOnlySync(DynamicOps<T> ops) {
         var syncedFields = getManaged().getSyncStorage().getSyncFields();
         var list = new ArrayList<T>();
         for (IRef<?> syncedField : syncedFields) {
-            list.add(syncedField.readInitialSync(op));
+            list.add(syncedField.readInitialSync(ops));
         }
-        return op.createList(list.stream());
+        return ops.createList(list.stream());
     }
 
     @Override
-    public <T> void writeReadOnlySync(DynamicOps<T> op, T payload) {
+    public <T> void writeReadOnlySync(DynamicOps<T> ops, T payload) {
         var syncedFields = getManaged().getSyncStorage().getSyncFields();
-        var list = op.getStream(payload).getOrThrow().toList();
+        var list = ops.getStream(payload).getOrThrow().toList();
         if (list.size() != syncedFields.length) {
             throw new IllegalArgumentException("Size of list does not match size of synced fields");
         }
         for (int i = 0; i < syncedFields.length; i++) {
             IRef<?> syncedField = syncedFields[i];
             var data = list.get(i);
-            syncedField.writeInitialSync(op, data);
+            syncedField.writeInitialSync(ops, data);
         }
     }
 

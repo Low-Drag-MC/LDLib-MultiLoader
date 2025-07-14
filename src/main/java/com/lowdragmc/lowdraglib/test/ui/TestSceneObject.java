@@ -40,6 +40,7 @@ public class TestSceneObject implements IUITest {
         testModel.transform().rotation(new Quaternionf().identity().rotationXYZ(30, 23, 75));
         sceneWidget.addSceneObject(testModel);
         sceneWidget.setTransformGizmoTarget(testModel.transform());
+        sceneWidget.useCacheBuffer();
 
 //        var sizeBox = Size.ofBoxObject();
 //        sizeBox.transform().position(new Vector3f(playerPos.below().getX(), playerPos.below().getY() + 1, playerPos.below().getZ()));

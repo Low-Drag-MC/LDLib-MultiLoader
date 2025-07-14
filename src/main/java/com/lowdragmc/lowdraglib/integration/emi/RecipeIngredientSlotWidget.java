@@ -33,14 +33,7 @@ public class RecipeIngredientSlotWidget extends SlotWidget {
             return list.getFirst();
         } else {
             return new ListEmiIngredient(list,
-                    () -> {
-                        if (slot.getXEICurrentIngredient() instanceof EmiIngredient ingredient) {
-                            return ingredient;
-                        } else {
-                            int index = (int)(System.currentTimeMillis() / 1000L % list.size());
-                            return list.get(index);
-                        }
-                    },
+                    () -> slot.getXEICurrentIngredient() instanceof EmiIngredient ingredient ? ingredient : list.getFirst(),
                     list.getFirst().getAmount())
                     .setChance(list.getFirst().getChance());
         }

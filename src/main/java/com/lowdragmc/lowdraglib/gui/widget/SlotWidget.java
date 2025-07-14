@@ -312,6 +312,22 @@ public class SlotWidget extends Widget implements IRecipeIngredientSlot, IConfig
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        Window window = Minecraft.getInstance().getWindow();
+        double mouseX = Minecraft.getInstance().mouseHandler.xpos() * window.getGuiScaledWidth() / window.getScreenWidth();
+        double mouseY = Minecraft.getInstance().mouseHandler.ypos() * window.getGuiScaledHeight() / window.getScreenHeight();
+        if (isMouseOverElement(mouseX, mouseY)) {
+            if (LDLib.isEmiLoaded()) {
+                if (EMICallWrapper.keyPressed(getXEICurrentIngredient(), keyCode, scanCode, modifiers)) {
+                    return true;
+                }
+            }
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
     @OnlyIn(Dist.CLIENT)
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (isMouseOverElement(mouseX, mouseY) && gui != null) {
@@ -769,16 +785,14 @@ public class SlotWidget extends Widget implements IRecipeIngredientSlot, IConfig
 
         public static boolean mouseClicked(Object ingredient, int button) {
             if (ingredient instanceof EmiStack emiStack) {
-                EmiScreenManager.stackInteraction(new EmiStackInteraction(emiStack), (bind) -> bind.matchesMouse(button));
-                return true;
+                return EmiScreenManager.stackInteraction(new EmiStackInteraction(emiStack), (bind) -> bind.matchesMouse(button));
             }
             return false;
         }
 
         public static boolean keyPressed(Object ingredient, int keyCode, int scanCode, int modifiers) {
             if (ingredient instanceof EmiStack emiStack) {
-                EmiScreenManager.stackInteraction(new EmiStackInteraction(emiStack), (bind) -> bind.matchesKey(keyCode, scanCode));
-                return true;
+                return EmiScreenManager.stackInteraction(new EmiStackInteraction(emiStack), (bind) -> bind.matchesKey(keyCode, scanCode));
             }
             return false;
         }

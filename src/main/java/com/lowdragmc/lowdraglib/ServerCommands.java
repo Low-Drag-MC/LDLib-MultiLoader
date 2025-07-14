@@ -21,6 +21,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
 
 /**
@@ -90,18 +91,17 @@ public class ServerCommands {
 	}
 
 	public static int runBuildScene(CommandContext<CommandSourceStack> context, boolean saveNbt, BlockPos offset) {
+		BlockPos start = BlockPosArgument.getBlockPos(context, "start");
+		BlockPos end = BlockPosArgument.getBlockPos(context, "end");
+		ServerLevel level = context.getSource().getLevel();
 
-		var start = BlockPosArgument.getBlockPos(context, "start");
-		var end = BlockPosArgument.getBlockPos(context, "end");
-		var world = context.getSource().getLevel();
+		int smallestX = Math.min(start.getX(), end.getX());
+		int smallestY = Math.min(start.getY(), end.getY());
+		int smallestZ = Math.min(start.getZ(), end.getZ());
 
-		int smallestX = start.getX() <= end.getX() ? start.getX() : end.getX();
-		int smallestY = start.getY() <= end.getY() ? start.getY() : end.getY();
-		int smallestZ = start.getZ() <= end.getZ() ? start.getZ() : end.getZ();
-
-		int largestX = start.getX() >= end.getX() ? start.getX() : end.getX();
-		int largestY = start.getY() >= end.getY() ? start.getY() : end.getY();
-		int largestZ = start.getZ() >= end.getZ() ? start.getZ() : end.getZ();
+		int largestX = Math.max(start.getX(), end.getX());
+		int largestY = Math.max(start.getY(), end.getY());
+		int largestZ = Math.max(start.getZ(), end.getZ());
 
 		int offsetX = -((largestX - smallestX) / 2) + offset.getX();
 		int offsetY = offset.getY();
@@ -112,23 +112,20 @@ public class ServerCommands {
 		for (int x = smallestX; x <= largestX; x++) {
 			for (int y = smallestY; y <= largestY; y++) {
 				for (int z = smallestZ; z <= largestZ; z++) {
-					var block = world.getBlockState(new BlockPos(x, y, z));
-					var blockentity = world
-							.getBlockEntity(new BlockPos(x, y, z));
+					var block = level.getBlockState(new BlockPos(x, y, z));
+					var blockentity = level.getBlockEntity(new BlockPos(x, y, z));
 					if (block.getBlock() != Blocks.AIR) {
-						String id = BuiltInRegistries.BLOCK
-								.getKey(block.getBlock()).toString();
-						nodes.add(
-								String.format(
-										"<add pos=\"%d %d %d\" block=\"%s\">",
-										x - smallestX + offsetX, y - smallestY + offsetY,
-										z - smallestZ + offsetZ, id));
+						String id = BuiltInRegistries.BLOCK.getKey(block.getBlock()).toString();
+						nodes.add(String.format(
+								"<add pos=\"%d %d %d\" block=\"%s\">",
+								x - smallestX + offsetX, y - smallestY + offsetY,
+								z - smallestZ + offsetZ, id));
 						nodes.addAll(block.getValues().entrySet().stream()
 								.map(e -> String.format(
 										"<properties name=\"%s\" value=\"%s\" />",
 										e.getKey().getName(),
 										e.getValue().toString()))
-								.collect(Collectors.toList()));
+								.toList());
 						if (saveNbt && blockentity != null) {
 							var tag = blockentity.saveWithoutMetadata(context.getSource().registryAccess());
 							nodes.add("<nbt>");
@@ -142,17 +139,13 @@ public class ServerCommands {
 			}
 		}
 
-		var text = nodes.stream().collect(Collectors.joining("\n"));
+		var text = String.join("\n", nodes);
 
-		context.getSource().sendSuccess(() -> Component
-				.literal("[Copy XML to clipboard]")
-				.withStyle(Style.EMPTY.withColor(ChatFormatting.YELLOW)
-						.withClickEvent(new ClickEvent(
-								ClickEvent.Action.COPY_TO_CLIPBOARD,
-								text))),
+		context.getSource().sendSuccess(() -> Component.literal("[Copy XML to clipboard]")
+						.withStyle(Style.EMPTY.withColor(ChatFormatting.YELLOW)
+								.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, text))),
 				true);
 
 		return 1;
-
 	}
 }

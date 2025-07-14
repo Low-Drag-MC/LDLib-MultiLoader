@@ -6,27 +6,46 @@ import com.lowdragmc.lowdraglib.compass.CompassView;
 import com.lowdragmc.lowdraglib.gui.factory.BlockEntityUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.IUIHolder;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.syncdata.IBlockEntityManaged;
-import com.lowdragmc.lowdraglib.syncdata.blockentity.IManagedBlockEntity;
+import com.lowdragmc.lowdraglib.gui.widget.SceneWidget;
+import com.lowdragmc.lowdraglib.syncdata.IManaged;
+import com.lowdragmc.lowdraglib.syncdata.IManagedStorage;
+import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
+import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
+import com.lowdragmc.lowdraglib.syncdata.annotation.ReadOnlyManaged;
+import com.lowdragmc.lowdraglib.syncdata.blockentity.IAsyncAutoSyncBlockEntity;
+import com.lowdragmc.lowdraglib.syncdata.field.FieldManagedStorage;
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
-import com.lowdragmc.lowdraglib.syncdata.storage.FieldManagedStorage;
-import com.lowdragmc.lowdraglib.syncdata.storage.IManagedStorage;
-import lombok.Getter;
+import com.lowdragmc.lowdraglib.syncdata.managed.IRef;
+import com.lowdragmc.lowdraglib.test.sync.TestReadOnlyManaged;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+
+import lombok.Getter;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author KilaBash
  * @date 2022/05/24
  * @implNote TODO
  */
-public class TestBlockEntity extends BlockEntity implements IUIHolder.BlockEntityUI, IBlockEntityManaged, IManagedBlockEntity {
+public class TestBlockEntity extends BlockEntity implements IUIHolder.BlockEntityUI, IAsyncAutoSyncBlockEntity, IManaged {
+
     protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(TestBlockEntity.class);
     @Getter
     private final FieldManagedStorage syncStorage = new FieldManagedStorage(this);
+
+    @DescSynced
+    @Persisted
+    @ReadOnlyManaged(onDirtyMethod = "onDirty",
+            serializeMethod = "serializeUid",
+            deserializeMethod = "deserializeUid")
+    public TestReadOnlyManaged testReadOnlyManaged = new TestReadOnlyManaged(this);
 
     public TestBlockEntity(BlockPos pWorldPosition, BlockState pBlockState) {
         super(CommonProxy.TEST_BE_TYPE.get(), pWorldPosition, pBlockState);
@@ -40,8 +59,22 @@ public class TestBlockEntity extends BlockEntity implements IUIHolder.BlockEntit
 
     @Override
     public ModularUI createUI(Player entityPlayer) {
+        Set<BlockPos> positions = new HashSet<>();
+        positions.add(this.worldPosition);
+
+        BlockPos.MutableBlockPos mutable = this.worldPosition.mutable();
+        for (Direction dir : Direction.values()) {
+            for (Direction dir2 : Direction.values()) {
+                if (dir == dir2 || dir == dir2.getOpposite()) continue;
+                positions.add(mutable.setWithOffset(this.worldPosition, dir).move(dir2).immutable());
+            }
+        };
+
         return new ModularUI(this, entityPlayer)
-                .widget(new CompassView(LDLib.MOD_ID));
+                .widget(new CompassView(LDLib.MOD_ID))
+                .widget(new SceneWidget(64, 64, 300, 300, entityPlayer.level(), true)
+                        .setRenderedCore(positions)
+                        .useOrtho(false));
 //        return new ModularUI(this, entityPlayer).widget(new UIEditor(LDLib.location));
     }
 
@@ -60,4 +93,27 @@ public class TestBlockEntity extends BlockEntity implements IUIHolder.BlockEntit
         markAsDirty();
     }
 
+    @SuppressWarnings("unused")
+    private boolean onDirty(TestReadOnlyManaged testManaged) {
+        if (testManaged != null) {
+            for (IRef ref : testManaged.getSyncStorage().getNonLazyFields()) {
+                ref.update();
+            }
+            return testManaged.getSyncStorage().hasDirtySyncFields() ||
+                    testManaged.getSyncStorage().hasDirtyPersistedFields();
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unused")
+    private CompoundTag serializeUid(TestReadOnlyManaged coverBehavior) {
+        var uid = new CompoundTag();
+        uid.putString("id", "testID");
+        return uid;
+    }
+
+    @SuppressWarnings("unused")
+    private TestReadOnlyManaged deserializeUid(CompoundTag uid) {
+        return new TestReadOnlyManaged(this);
+    }
 }

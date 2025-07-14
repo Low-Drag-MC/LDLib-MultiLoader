@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib.editor.ui;
 
+import com.lowdragmc.lowdraglib.Platform;
 import com.lowdragmc.lowdraglib.editor.Icons;
 import com.lowdragmc.lowdraglib.editor.configurator.IConfigurableWidget;
 import com.lowdragmc.lowdraglib.editor.configurator.IConfigurableWidgetGroup;
@@ -170,7 +171,7 @@ public class MainPanel extends WidgetGroup {
             getEditor().ifCopiedPresent(COPY_TYPE, c -> {
                 List<CompoundTag> list = (List<CompoundTag>) c;
                 for (var tag : list) {
-                    var widget = IConfigurableWidget.deserializeWrapper(tag);
+                    var widget = IConfigurableWidget.deserializeWrapper(tag, Platform.getFrozenRegistry());
                     if (widget != null && hoverUI.inner() instanceof IConfigurableWidgetGroup group) {
                         widget.widget().addSelfPosition(5,5);
                         if (group.canWidgetAccepted(widget)) {
@@ -184,7 +185,7 @@ public class MainPanel extends WidgetGroup {
     }
 
     protected void alignVB() {
-        if (selectedUIs.size() > 0) {
+        if (!selectedUIs.isEmpty()) {
             int max = Integer.MIN_VALUE;
             for (UIWrapper ui : selectedUIs) {
                 max = Math.max(max, ui.inner().widget().getRect().down);
@@ -197,7 +198,7 @@ public class MainPanel extends WidgetGroup {
     }
 
     protected void alignVT() {
-        if (selectedUIs.size() > 0) {
+        if (!selectedUIs.isEmpty()) {
             int min = Integer.MAX_VALUE;
             for (UIWrapper ui : selectedUIs) {
                 min = Math.min(min, ui.inner().widget().getRect().up);
@@ -223,7 +224,7 @@ public class MainPanel extends WidgetGroup {
     }
 
     protected void alignVC() {
-        if (selectedUIs.size() > 0) {
+        if (!selectedUIs.isEmpty()) {
             int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
             for (UIWrapper ui : selectedUIs) {
                 min = Math.min(min, ui.inner().widget().getRect().up);
@@ -238,7 +239,7 @@ public class MainPanel extends WidgetGroup {
     }
 
     protected void alignHR() {
-        if (selectedUIs.size() > 0) {
+        if (!selectedUIs.isEmpty()) {
             int max = Integer.MIN_VALUE;
             for (UIWrapper ui : selectedUIs) {
                 max = Math.max(max, ui.inner().widget().getRect().right);
@@ -251,7 +252,7 @@ public class MainPanel extends WidgetGroup {
     }
 
     protected void alignHL() {
-        if (selectedUIs.size() > 0) {
+        if (!selectedUIs.isEmpty()) {
             int min = Integer.MAX_VALUE;
             for (UIWrapper ui : selectedUIs) {
                 min = Math.min(min, ui.inner().widget().getRect().left);
@@ -277,7 +278,7 @@ public class MainPanel extends WidgetGroup {
     }
 
     protected void alignHC() {
-        if (selectedUIs.size() > 0) {
+        if (!selectedUIs.isEmpty()) {
             int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
             for (UIWrapper ui : selectedUIs) {
                 min = Math.min(min, ui.inner().widget().getRect().left);

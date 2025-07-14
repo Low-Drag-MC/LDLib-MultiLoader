@@ -10,6 +10,7 @@ import com.lowdragmc.lowdraglib.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.jetbrains.annotations.ApiStatus;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -319,6 +320,7 @@ public final class Transform implements IPersistedSerializable, IConfigurable {
      * Set the ID of the transform.
      * Do not call this method unless you know what you are doing.
      */
+    @ApiStatus.Internal
     public void _setInternalID(UUID uuid) {
         id = uuid;
     }
@@ -327,6 +329,7 @@ public final class Transform implements IPersistedSerializable, IConfigurable {
      * Refresh the ID of the transform. This will generate a new random UUID.
      * Do not call this method unless you know what you are doing.
      */
+    @ApiStatus.Internal
     public void _refreshInternalID() {
         id = UUID.randomUUID();
     }
@@ -335,7 +338,30 @@ public final class Transform implements IPersistedSerializable, IConfigurable {
      * Set the parent ID of the transform.
      * Do not call this method unless you know what you are doing.
      */
+    @ApiStatus.Internal
     public void _setInternalParentID(UUID uuid) {
         _parentId = uuid;
+    }
+
+    /**
+     * Get the parent ID.
+     */
+    @ApiStatus.Internal
+    public UUID _getInternalParentID() {
+        return _parentId;
+    }
+
+    /**
+     * Copies the transform properties from another Transform instance.
+     * @param local If true, copies the local transform properties (position, rotation, scale);
+     *              otherwise copies the world transform properties.
+     * @param copyHierarchy If true, copies the parent-child hierarchy along with the transform.
+     */
+    public void copyTransformFrom(Transform transform, boolean local, boolean copyHierarchy) {
+        set(transform, local);
+        if (copyHierarchy) {
+            parent(transform.parent());
+            _setInternalParentID(transform._getInternalParentID());
+        }
     }
 }

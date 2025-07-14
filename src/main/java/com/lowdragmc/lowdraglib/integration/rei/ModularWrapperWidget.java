@@ -1,6 +1,9 @@
 package com.lowdragmc.lowdraglib.integration.rei;
 
+import com.lowdragmc.lowdraglib.gui.ingredient.IRecipeIngredientSlot;
+import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
 import com.lowdragmc.lowdraglib.integration.jei.ModularWrapper;
+import me.shedaniel.math.Point;
 import me.shedaniel.rei.api.client.gui.widgets.Tooltip;
 import me.shedaniel.rei.api.client.gui.widgets.TooltipContext;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
@@ -39,16 +42,24 @@ public class ModularWrapperWidget extends Widget {
     }
 
     @Override
-    @Nullable
-    public Tooltip getTooltip(TooltipContext context) {
-        if (modular.tooltipTexts != null && !modular.tooltipTexts.isEmpty()) {
-            var tooltip = Tooltip.create(context.getPoint(), modular.tooltipTexts);
-            if (modular.tooltipComponent != null) {
-                tooltip.add(modular.tooltipComponent);
-            }
-            return tooltip;
+    public @Nullable Tooltip getTooltip(TooltipContext context) {
+        if (modular.tooltipTexts == null || modular.tooltipTexts.isEmpty()) {
+            return super.getTooltip(context);
         }
-        return null;
+        Point mouse = context.getPoint();
+        var hovered = modular.modularUI.mainGroup.getHoverElement(mouse.x + modular.getLeft(), mouse.y + modular.getTop());
+        if (hovered instanceof IRecipeIngredientSlot) {
+            // don't skip the tooltip if the hovered widget is in a draggable group, as those are skipped when creating tooltips
+            if (!(hovered.getParent() instanceof DraggableScrollableWidgetGroup draggable && draggable.isUseScissor())) {
+                return super.getTooltip(context);
+            }
+        }
+
+        var tooltip = Tooltip.create(mouse, modular.tooltipTexts);
+        if (modular.tooltipComponent != null) {
+            tooltip.add(modular.tooltipComponent);
+        }
+        return tooltip;
     }
 
     @Override
@@ -85,7 +96,7 @@ public class ModularWrapperWidget extends Widget {
     public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
         modular.focused = false;
         if (modular.modularUI.mainGroup.keyPressed(pKeyCode, pScanCode, pModifiers)) {
-            return false;
+            return true;
         }
         return super.keyPressed(pKeyCode, pScanCode, pModifiers);
     }

@@ -856,12 +856,12 @@ public class WidgetGroup extends Widget implements IGhostIngredientTarget, IIngr
     }
 
     @Override
-    public void deserializeAdditionalNBT(Tag nbt, HolderLookup.Provider provider) {
+    public void deserializeAdditionalNBT(Tag nbt, HolderLookup.@NotNull Provider provider) {
         if (nbt instanceof CompoundTag tag) {
             var children = tag.getList("children", Tag.TAG_COMPOUND);
             for (var childTag : children) {
                 if (childTag instanceof CompoundTag ui) {
-                    var child = IConfigurableWidget.deserializeWrapper(ui);
+                    var child = IConfigurableWidget.deserializeWrapper(ui, provider);
                     if (child != null) {
                         addWidget(child.widget());
                     }

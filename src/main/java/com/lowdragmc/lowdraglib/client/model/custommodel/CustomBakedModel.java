@@ -24,8 +24,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 
-import static com.lowdragmc.lowdraglib.client.model.forge.LDLRendererModel.RendererBakedModel.POS;
-import static com.lowdragmc.lowdraglib.client.model.forge.LDLRendererModel.RendererBakedModel.WORLD;
+import static com.lowdragmc.lowdraglib.client.model.forge.LDLRendererModel.RendererBakedModel.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -46,13 +45,18 @@ public class CustomBakedModel<T extends BakedModel> extends BakedModelWrapper<T>
     }
 
     @Override
-    public @NotNull List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull RandomSource rand, @NotNull ModelData data, @Nullable RenderType renderType) {
-        BlockAndTintGetter level = data.get(WORLD);
-        BlockPos pos = data.get(POS);
+    public @NotNull List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand,
+                                             ModelData modelData, @Nullable RenderType renderType) {
+        BlockAndTintGetter level = modelData.get(WORLD);
+        BlockPos pos = modelData.get(POS);
+        ModelData parentModelData = modelData.get(MODEL_DATA);
+        if (parentModelData == null) parentModelData = ModelData.EMPTY;
+
         if (level != null && pos != null && state != null) {
-            return getCustomQuads(level, pos, state, side, rand, data, renderType);
+            return getCustomQuads(level, pos, state, side, rand, parentModelData, renderType);
         } else {
-            return super.getQuads(state, side, rand, data, renderType);
+            // return the parent's quads (instead of nothing)
+            return originalModel.getQuads(state, side, rand, parentModelData, renderType);
         }
     }
 
@@ -62,25 +66,33 @@ public class CustomBakedModel<T extends BakedModel> extends BakedModelWrapper<T>
         return modelData.derive()
                 .with(WORLD, level)
                 .with(POS, pos)
+                .with(MODEL_DATA, originalModel.getModelData(level, pos, state, modelData))
                 .build();
     }
 
-    @Nonnull
-    public List<BakedQuad> getCustomQuads(BlockAndTintGetter level, BlockPos pos, @Nonnull BlockState state, @Nullable Direction side, RandomSource rand, @NotNull ModelData data, @Nullable RenderType renderType) {
+    public @NotNull List<BakedQuad> getCustomQuads(BlockAndTintGetter level, BlockPos pos, @NotNull BlockState state,
+                                                   @Nullable Direction side, RandomSource rand,
+                                                   ModelData parentModelData, @Nullable RenderType renderType) {
         var connections = Connections.checkConnections(level, pos, state, side);
-        if (side == null) {
-            if (noSideCache.isEmpty()) {
-                synchronized (noSideCache) {
-                    if (noSideCache.isEmpty()) {
-                        noSideCache.addAll(buildCustomQuads(connections, getQuads(state, null, rand), 0.0f));
+        // Don't cache the quads if we're rendering for a specific render type or if the parent model has set any model data
+        // as that might change the model and caching anything will likely result in broken models.
+        if (renderType != null || !parentModelData.getProperties().isEmpty()) {
+            return buildCustomQuads(connections, originalModel.getQuads(state, side, rand, parentModelData, renderType), 0.0f);
+        } else {
+            if (side == null) {
+                if (noSideCache.isEmpty()) {
+                    synchronized (noSideCache) {
+                        if (noSideCache.isEmpty()) {
+                            noSideCache.addAll(buildCustomQuads(connections, originalModel.getQuads(state, null, rand, ModelData.EMPTY, null), 0.0f));
+                        }
                     }
                 }
+                return noSideCache;
             }
-            return noSideCache;
+            return sideCache
+                    .computeIfAbsent(side, key -> new ConcurrentHashMap<>())
+                    .computeIfAbsent(connections, key -> buildCustomQuads(connections, originalModel.getQuads(state, side, rand, ModelData.EMPTY, null), 0.0f));
         }
-        return sideCache
-                .computeIfAbsent(side, key -> new ConcurrentHashMap<>())
-                .computeIfAbsent(connections, key -> buildCustomQuads(connections, getQuads(state, side, rand), 0.0f));
     }
 
     public static List<BakedQuad> reBakeCustomQuads(List<BakedQuad> quads, BlockAndTintGetter level, BlockPos pos, @Nonnull BlockState state, @Nullable Direction side, float offset) {

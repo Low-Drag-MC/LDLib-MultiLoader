@@ -40,7 +40,7 @@ public class SearchComponentConfigurator<T> extends ValueConfigurator<T> impleme
         super.init(width);
         var componentWidth = width - leftWidth - rightWidth - 3;
         searchComponent = new SearchComponentWidget<>(leftWidth + 3, 2, componentWidth - 3, 10, this);
-        searchComponent.setShowUp(true);
+        searchComponent.setShowUp(isUp);
         searchComponent.setCapacity(5);
         searchComponent.setCurrent(supplier.get());
         var textFieldWidget = searchComponent.textFieldWidget;

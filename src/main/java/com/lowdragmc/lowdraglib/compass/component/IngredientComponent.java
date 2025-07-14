@@ -2,7 +2,6 @@ package com.lowdragmc.lowdraglib.compass.component;
 
 import com.lowdragmc.lowdraglib.compass.ILayoutComponent;
 import com.lowdragmc.lowdraglib.compass.LayoutPageWidget;
-import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
 import com.lowdragmc.lowdraglib.gui.widget.SlotWidget;
 import com.lowdragmc.lowdraglib.gui.widget.TankWidget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
@@ -60,12 +59,12 @@ public class IngredientComponent extends AbstractComponent {
                 }).toList();
                 CycleItemStackHandler itemStackHandler = new CycleItemStackHandler(List.of(items));
                 group.addWidget(new SlotWidget(itemStackHandler, 0, x, 1, false, false)
-                        .setBackground(new ResourceTexture("ldlib:textures/gui/slot.png")));
+                        .setBackground(SlotWidget.ITEM_SLOT_TEXTURE));
             } else if (ingredient instanceof FluidStack fluidStack) {
                 FluidTank tank = new FluidTank(fluidStack.getAmount());
                 tank.setFluid(fluidStack);
                 group.addWidget(new TankWidget(tank, x, 1, false, false)
-                        .setBackground(new ResourceTexture("ldlib:textures/gui/fluid_slot.png")));
+                        .setBackground(TankWidget.FLUID_SLOT_TEXTURE));
             }
             x += 20;
         }

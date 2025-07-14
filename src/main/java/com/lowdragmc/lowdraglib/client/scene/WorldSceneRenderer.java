@@ -12,6 +12,7 @@ import com.mojang.blaze3d.vertex.*;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.client.gui.screens.LoadingOverlay;
+import net.minecraft.client.resources.model.BakedModel;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.minecraft.client.Camera;
@@ -424,10 +425,10 @@ public abstract class WorldSceneRenderer {
         } else {
             BlockRenderDispatcher blockrendererdispatcher = mc.getBlockRenderer();
             try { // render the blocks in each layer
+                var random = RandomSource.createNewThreadLocalInstance();
                 renderedBlocksMap.forEach((renderedBlocks, hook) -> {
                     for (RenderType layer : RenderType.chunkBufferLayers()) {
                         layer.setupRenderState();
-                        Random random = new Random();
                         PoseStack poseStack = new PoseStack();
 
                         if (layer == RenderType.translucent()) { // render tesr before translucent
@@ -452,7 +453,7 @@ public abstract class WorldSceneRenderer {
 
                         var buffer = buffers.getBuffer(layer);
 
-                        renderBlocks(poseStack, blockrendererdispatcher, layer, new VertexConsumerWrapper(buffer), renderedBlocks, hook, particleTicks);
+                        renderBlocks(poseStack, blockrendererdispatcher, layer, new VertexConsumerWrapper(buffer), renderedBlocks, hook, particleTicks, random);
 
                         if (!endBatchLast) {
                             buffers.endBatch();
@@ -506,6 +507,7 @@ public abstract class WorldSceneRenderer {
             thread = new Thread(() -> {
                 cacheState.set(CacheState.COMPILING);
                 BlockRenderDispatcher blockrendererdispatcher = mc.getBlockRenderer();
+                var random = RandomSource.createNewThreadLocalInstance();
                 try { // render the blocks in each layer
                     ModelBlockRenderer.enableCaching();
                     PoseStack matrixstack = new PoseStack();
@@ -515,7 +517,7 @@ public abstract class WorldSceneRenderer {
                         RenderType layer = layers.get(i);
                         BufferBuilder buffer = new BufferBuilder(new ByteBufferBuilder(layer.bufferSize()), VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
                         renderedBlocksMap.forEach((renderedBlocks, hook) -> {
-                            renderBlocks(matrixstack, blockrendererdispatcher, layer, new VertexConsumerWrapper(buffer), renderedBlocks, hook, 0);
+                            renderBlocks(matrixstack, blockrendererdispatcher, layer, new VertexConsumerWrapper(buffer), renderedBlocks, hook, 0, random);
                         });
                         MeshData data = buffer.build();
                         if (data == null) {
@@ -562,10 +564,8 @@ public abstract class WorldSceneRenderer {
         } else {
             PoseStack matrixstack = new PoseStack();
             for (int i = 0; i < layers.size(); i++) {
-                VertexBuffer vertexbuffer = vertexBuffers[i];
-                if (vertexbuffer.isInvalid() || vertexbuffer.getFormat() == null) continue;
-
                 RenderType layer = layers.get(i);
+
                 if (layer == RenderType.translucent() && tileEntities != null) { // render tesr before translucent
                     if (world instanceof TrackedDummyWorld level) {
                         renderEntities(level, matrixstack, buffers, sceneEntityRenderHook, particleTicks);
@@ -575,6 +575,9 @@ public abstract class WorldSceneRenderer {
                         buffers.endBatch();
                     }
                 }
+
+                VertexBuffer vertexbuffer = vertexBuffers[i];
+                if (vertexbuffer.isInvalid() || vertexbuffer.getFormat() == null) continue;
 
                 layer.setupRenderState();
 
@@ -643,7 +646,7 @@ public abstract class WorldSceneRenderer {
         }
     }
 
-    private void renderBlocks(PoseStack poseStack, BlockRenderDispatcher blockrendererdispatcher, RenderType layer, VertexConsumerWrapper wrapperBuffer, Collection<BlockPos> renderedBlocks, @Nullable ISceneBlockRenderHook hook, float partialTicks) {
+    private void renderBlocks(PoseStack poseStack, BlockRenderDispatcher blockRenderer, RenderType layer, VertexConsumerWrapper wrapperBuffer, Collection<BlockPos> renderedBlocks, @Nullable ISceneBlockRenderHook hook, float partialTicks, RandomSource random) {
         for (BlockPos pos : renderedBlocks) {
             if (blocked != null && blocked.contains(pos)) {
                 continue;
@@ -656,17 +659,21 @@ public abstract class WorldSceneRenderer {
             if (hook != null) {
                 hook.applyVertexConsumerWrapper(world, pos, state, wrapperBuffer, layer, partialTicks);
             }
-
             if (block == Blocks.AIR) continue;
-            if (state.getRenderShape() != INVISIBLE && canRenderInLayer(state, layer)) {
+            BakedModel model = blockRenderer.getBlockModel(state);
+            ModelData modelData = getModelData(model, state, pos, level);
+
+            if (state.getRenderShape() != INVISIBLE && model.getRenderTypes(state, random, modelData).contains(renderType)) {
                 poseStack.pushPose();
                 poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
-                renderBlocksForge(blockrendererdispatcher, state, pos, world, poseStack, wrapperBuffer, world.random, layer);
+                blockRenderDispatcher.getModelRenderer().tesselateBlock(level, blockModel, state, pos,
+                        poseStack, consumer, true, random, state.getSeed(pos),
+                        OverlayTexture.NO_OVERLAY, modelData, renderType);
                 poseStack.popPose();
             }
             if (!fluidState.isEmpty() && ItemBlockRenderTypes.getRenderLayer(fluidState) == layer) { // I dont want to do this fxxk wrapper
                 wrapperBuffer.addOffset((pos.getX() - (pos.getX() & 15)), (pos.getY() - (pos.getY() & 15)), (pos.getZ() - (pos.getZ() & 15)));
-                blockrendererdispatcher.renderLiquid(pos, world, wrapperBuffer, state, fluidState);
+                blockRenderer.renderLiquid(pos, world, wrapperBuffer, state, fluidState);
             }
             wrapperBuffer.clearOffset();
             wrapperBuffer.clearColor();
@@ -676,15 +683,18 @@ public abstract class WorldSceneRenderer {
         }
     }
 
-    public static boolean canRenderInLayer(BlockState state, RenderType renderType) {
-        return ItemBlockRenderTypes.getRenderLayers(state).contains(renderType);
+    @SuppressWarnings("UnstableApiUsage")
+    public static ModelData getModelData(BakedModel model, BlockState state, BlockPos pos, BlockAndTintGetter level) {
+        ModelData modelData = level.getModelData(pos);
+        if (modelData == null || modelData == ModelData.EMPTY) {
+            var be = level.getExistingBlockEntity(pos);
+            if (be != null) {
+                modelData = be.getModelData();
+            }
+        }
+        return model.getModelData(level, pos, state, modelData != null ? modelData : ModelData.EMPTY);
     }
 
-    public static void renderBlocksForge(BlockRenderDispatcher blockRenderDispatcher, BlockState state, BlockPos pos, BlockAndTintGetter level, @Nonnull PoseStack poseStack, VertexConsumer consumer, RandomSource random, RenderType renderType) {
-        var te = level.getBlockEntity(pos);
-        ModelData modelData = blockRenderDispatcher.getBlockModel(state).getModelData(level, pos, state, te == null ? ModelData.EMPTY : te.getModelData());
-        blockRenderDispatcher.renderBatched(state, pos, level, poseStack, consumer, false, random, modelData, renderType);
-    }
 
     private void renderTESR(Collection<BlockPos> poses, PoseStack poseStack, MultiBufferSource.BufferSource buffers, @Nullable ISceneBlockRenderHook hook, float partialTicks) {
         for (BlockPos pos : poses) {

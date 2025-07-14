@@ -29,7 +29,8 @@ public class Resources {
     public static Resources fromNBT(CompoundTag tag) {
         Map<String, Resource<?>> map = new LinkedHashMap<>();
         for (String key : tag.getAllKeys()) {
-            LDLibRegistries.RESOURCES.getOptional(key).ifPresent(resource -> map.put(key, resource.value().get()));
+            LDLibRegistries.RESOURCES.getOptional(key)
+                    .ifPresent(resource -> map.put(key, resource.value().get()));
         }
         var resources = new Resources(map);
         resources.deserializeNBT(tag, Platform.getFrozenRegistry());

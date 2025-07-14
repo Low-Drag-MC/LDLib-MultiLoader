@@ -4,16 +4,16 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 import lombok.experimental.UtilityClass;
+
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.ExtraCodecs;
 
-import java.util.UUID;
 import java.util.stream.Stream;
 
 @UtilityClass
 public final class LDLibExtraCodecs {
-    public final static MapCodec ERROR_DECODER = MapCodec.of(Encoder.empty(), new MapDecoder.Implementation<>() {
+    public final static MapCodec<?> ERROR_DECODER = MapCodec.of(Encoder.empty(), new MapDecoder.Implementation<>() {
         @Override
         public <T> DataResult<Object> decode(final DynamicOps<T> ops, final MapLike<T> input) {
             return DataResult.error(() -> "Error decoding");
@@ -29,8 +29,6 @@ public final class LDLibExtraCodecs {
             return "ERROR_DECODER";
         }
     });
-
-    public final static Codec<UUID> UUID = Codec.STRING.xmap(java.util.UUID::fromString, java.util.UUID::toString);
 
     public final static Codec<Tag> TAG = ExtraCodecs.converter(NbtOps.INSTANCE);
 
@@ -64,8 +62,9 @@ public final class LDLibExtraCodecs {
     /**
      * This codec use an empty encoder and a decoder that always return an error
      */
+    @SuppressWarnings("unchecked")
     public static <T> MapCodec<T> errorDecoder() {
-        return ERROR_DECODER;
+        return (MapCodec<T>) ERROR_DECODER;
     }
 
     public final static String NULL_STRING = "_NULL_";

@@ -7,6 +7,7 @@ import com.lowdragmc.lowdraglib.editor.annotation.DefaultValue;
 import com.lowdragmc.lowdraglib.editor.configurator.Configurator;
 import com.lowdragmc.lowdraglib.editor.configurator.IRendererConfigurator;
 import com.lowdragmc.lowdraglib.utils.ReflectionUtils;
+
 import net.minecraft.resources.ResourceLocation;
 
 import java.lang.reflect.Field;

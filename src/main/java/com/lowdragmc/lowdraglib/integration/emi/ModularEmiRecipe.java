@@ -118,13 +118,14 @@ public abstract class ModularEmiRecipe<T extends Widget> implements EmiRecipe {
                     // Clear the LDLib slots & add EMI slots based on them.
                     if (slot instanceof com.lowdragmc.lowdraglib.gui.widget.SlotWidget slotW) {
                         clearSlotWidgetHandler(slotW, 0);
+                        slotWidget = new SlotWidget(ingredients, w.getPosition().x, w.getPosition().y);
                     } else if (slot instanceof com.lowdragmc.lowdraglib.gui.widget.TankWidget tankW) {
                         clearTankWidgetHandler(tankW);
                         long capacity = Math.max(1, ingredients.getAmount());
                         slotWidget = new TankWidget(ingredients, w.getPosition().x, w.getPosition().y, w.getSize().width, w.getSize().height, capacity);
                     }
                     if (slotWidget == null) {
-                        slotWidget = (SlotWidget) EMICallWrapper.creator(slot);
+                        slotWidget = (SlotWidget) EMICallWrapper.createRecipeSlotWidget(slot);
                     }
 
                     slotWidget.customBackground(null, w.getPosition().x, w.getPosition().y, w.getSize().width, w.getSize().height)
@@ -171,7 +172,7 @@ public abstract class ModularEmiRecipe<T extends Widget> implements EmiRecipe {
 
     public static final class EMICallWrapper {
 
-        public static Object creator(IRecipeIngredientSlot slot) {
+        public static Object createRecipeSlotWidget(IRecipeIngredientSlot slot) {
             return new RecipeIngredientSlotWidget(slot);
         }
     }

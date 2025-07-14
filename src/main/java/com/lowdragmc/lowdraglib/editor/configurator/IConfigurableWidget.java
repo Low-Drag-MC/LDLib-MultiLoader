@@ -9,6 +9,9 @@ import com.lowdragmc.lowdraglib.gui.texture.ColorRectTexture;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.serialization.Codec;
+import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 
@@ -22,9 +25,10 @@ import java.util.function.Supplier;
  * @implNote IConfigurableWidget
  */
 public interface IConfigurableWidget extends IConfigurable, IPersistedSerializable, ILDLRegister<IConfigurableWidget, Supplier<IConfigurableWidget>> {
-    Codec<IConfigurableWidget> CODEC = LDLibRegistries.WIDGETS.optionalCodec().dispatch(ILDLRegister::getRegistryHolderOptional,
-            optional -> optional.map(holder -> PersistedParser.createCodec(holder.value()).fieldOf("data"))
-                    .orElseGet(LDLibExtraCodecs::errorDecoder));
+    Codec<IConfigurableWidget> CODEC = LDLibRegistries.WIDGETS.optionalCodec()
+            .dispatch(ILDLRegister::getRegistryHolderOptional,
+                    optional -> optional.map(holder -> PersistedParser.createCodec(holder.value()).fieldOf("data"))
+                            .orElseGet(LDLibExtraCodecs::errorDecoder));
 
     default Widget widget() {
         return (Widget) this;
@@ -68,8 +72,9 @@ public interface IConfigurableWidget extends IConfigurable, IPersistedSerializab
     }
 
     @Nullable
-    static IConfigurableWidget deserializeWrapper(CompoundTag tag) {
-        return CODEC.parse(NbtOps.INSTANCE, tag).result().orElse(null);
+    static IConfigurableWidget deserializeWrapper(CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+        var registryOps = registries.createSerializationContext(NbtOps.INSTANCE);
+        return CODEC.parse(registryOps, tag).result().orElse(null);
     }
 
     // ******* setter ********//

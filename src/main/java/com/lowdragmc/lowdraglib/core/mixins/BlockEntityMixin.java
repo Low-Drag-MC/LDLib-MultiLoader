@@ -32,7 +32,7 @@ public abstract class BlockEntityMixin {
     @Inject(method = "saveAdditional", at = @At(value = "RETURN"))
     private void injectSaveAdditional(CompoundTag pTag, HolderLookup.Provider provider, CallbackInfo ci) {
         if (this instanceof IAutoPersistBlockEntity autoPersistBlockEntity) {
-            autoPersistBlockEntity.saveManagedPersistentData(pTag, false);
+            autoPersistBlockEntity.saveManagedPersistentData(pTag, provider, false);
         }
     }
 
@@ -41,7 +41,7 @@ public abstract class BlockEntityMixin {
         if (this instanceof IAutoSyncBlockEntity autoSyncBlockEntity && pTag.get(autoSyncBlockEntity.getSyncTag()) instanceof CompoundTag tag) {
             autoSyncBlockEntity.deserializeInitialData(tag);
         } else if (this instanceof IAutoPersistBlockEntity autoPersistBlockEntity) {
-            autoPersistBlockEntity.loadManagedPersistentData(pTag);
+            autoPersistBlockEntity.loadManagedPersistentData(pTag, provider);
         }
     }
 

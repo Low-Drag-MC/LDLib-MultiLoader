@@ -10,12 +10,13 @@ import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.registry.ILDLRegisterClient;
 import com.mojang.datafixers.util.Either;
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 
- import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ import com.lowdragmc.lowdraglib.registry.annotation.LDLRegister;
  * or you can add a resource dynamically to the project
  */
 @SuppressWarnings({"unchecked"})
-public abstract class Resource<T> implements ILDLRegisterClient<Resource<?>, Supplier<Resource>> {
+public abstract class Resource<T> implements ILDLRegisterClient<Resource<?>, Supplier<Resource<?>>> {
     private final static Map<String, StaticResource<?>> STATIC_RESOURCES = new HashMap<>();
     @Getter
     private final Map<String, T> builtinResources = new LinkedHashMap<>();
@@ -53,23 +54,20 @@ public abstract class Resource<T> implements ILDLRegisterClient<Resource<?>, Sup
         this.staticLocation = staticLocation;
     }
 
-    public void buildDefault() {
-    }
+    public void buildDefault() {}
 
     public void onLoad() {
         getStaticResource().loadAndUpdateStaticResource();
     }
 
-    public void unLoad() {
-
-    }
+    public void unLoad() {}
 
     public StaticResource<T> getStaticResource() {
         if (!supportStaticResource()) return StaticResource.empty();
         if (staticResource == null) {
             staticResource = (StaticResource<T>) STATIC_RESOURCES.computeIfAbsent(name(),
                     name -> LDLibRegistries.RESOURCES.getOptional(name)
-                            .map(r -> new StaticResource<T>(r.value().get()))
+                            .map(r -> new StaticResource<>(r.value().get()))
                             .orElseGet(StaticResource::empty));
         }
         return staticResource;
@@ -116,11 +114,8 @@ public abstract class Resource<T> implements ILDLRegisterClient<Resource<?>, Sup
     }
 
     public void addResource(Either<String, File> key, T resource) {
-        if (key.left().isPresent()) {
-            addBuiltinResource(key.left().get(), resource);
-        } else if (key.right().isPresent()) {
-            addStaticResource(key.right().get(), resource);
-        }
+        key.ifLeft(left -> addBuiltinResource(left, resource))
+                .ifRight(file -> addStaticResource(file, resource));
     }
 
     public void addStaticResource(File file, T resource) {
@@ -185,9 +180,9 @@ public abstract class Resource<T> implements ILDLRegisterClient<Resource<?>, Sup
 
     public abstract ResourceContainer<T, ? extends Widget> createContainer(ResourcePanel panel);
 
-    @Nullable
-    public abstract Tag serialize(T value, HolderLookup.Provider provider);
-    public abstract T deserialize(Tag nbt, HolderLookup.Provider provider);
+    public abstract @Nullable Tag serialize(T value, HolderLookup.Provider provider);
+
+    public abstract @Nullable T deserialize(Tag nbt, HolderLookup.Provider provider);
 
     public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();

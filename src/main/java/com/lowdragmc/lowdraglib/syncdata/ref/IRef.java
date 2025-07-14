@@ -8,6 +8,8 @@ import com.lowdragmc.lowdraglib.syncdata.blockentity.IAutoPersistBlockEntity;
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedKey;
 import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 
@@ -104,29 +106,29 @@ public interface IRef<TYPE> {
     /** 
      * This method is used to read the persisted data. see {@link IAutoPersistBlockEntity#saveManagedPersistentData}
      */
-    default <T> T readPersisted(DynamicOps<T> op) {
-        return getAccessor().readField(op, this);
+    default <T> T readPersisted(DynamicOps<T> ops) {
+        return getAccessor().readField(ops, this);
     }
 
     /** 
-     * This method is used to write the persisted data. {@link IAutoPersistBlockEntity#loadManagedPersistentData(CompoundTag)}
+     * This method is used to write the persisted data. {@link IAutoPersistBlockEntity#loadManagedPersistentData(CompoundTag, HolderLookup.Provider)}
      */
-    default <T> void writePersisted(DynamicOps<T> op, T payload) {
-        getAccessor().writeField(op, this, payload);
+    default <T> void writePersisted(DynamicOps<T> ops, T payload) {
+        getAccessor().writeField(ops, this, payload);
     }
 
     /** 
      * This method is used to read the sync initial data. see {@link IAutoSyncBlockEntity#serializeInitialData()}
      */
-    default <T> T readInitialSync(DynamicOps<T> op) {
-        return getAccessor().readField(op, this);
+    default <T> T readInitialSync(DynamicOps<T> ops) {
+        return getAccessor().readField(ops, this);
     }
 
     /**
      * This method is used to write the sync initial data. see {@link IAutoSyncBlockEntity#deserializeInitialData(CompoundTag)}
      */
-    default <T> void writeInitialSync(DynamicOps<T> op, T payload) {
-        getAccessor().writeField(op, this, payload);
+    default <T> void writeInitialSync(DynamicOps<T> ops, T payload) {
+        getAccessor().writeField(ops, this, payload);
     }
 
     /** 

@@ -237,12 +237,11 @@ public class TextTexture extends TransformTexture {
         graphics.drawString(fontRenderer, line, (int) _x, (int) _y, color, dropShadow);
     }
 
-    @OnlyIn(Dist.CLIENT)
     public int getLines() {
         return texts.size();
     }
 
-    public enum TextType{
+    public enum TextType {
         NORMAL,
         HIDE,
         ROLL,

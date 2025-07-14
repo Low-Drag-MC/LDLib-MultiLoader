@@ -78,10 +78,6 @@ public class HeldItemUIFactory extends UIFactory<HeldItemUIFactory.HeldItemHolde
         }
 
         @Override
-        public void markAsDirty() {
-
-        }
-
+        public void markAsDirty() {}
     }
-
 }

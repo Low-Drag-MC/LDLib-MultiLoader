@@ -77,7 +77,7 @@ public class AutoRegistry<A extends Annotation, C, V> extends LDLRegistry.String
                 clazz -> {
                     if (baseClazz.isAssignableFrom(clazz)) {
                         try {
-                            Class<? extends C> realClass =  (Class<? extends C>) clazz;
+                            Class<? extends C> realClass = (Class<? extends C>) clazz;
                             if (classFilter == null || classFilter.test(realClass)) {
                                 var annotation = clazz.getAnnotation(annotationClass);
                                 var key = keyFactory.apply(annotation, realClass);
@@ -106,7 +106,7 @@ public class AutoRegistry<A extends Annotation, C, V> extends LDLRegistry.String
         try {
             var constructor = clazz.getDeclaredConstructor();
             constructor.setAccessible(true);
-            return () ->  {
+            return () -> {
                 try {
                     return constructor.newInstance();
                 } catch (Throwable e) {
@@ -118,13 +118,17 @@ public class AutoRegistry<A extends Annotation, C, V> extends LDLRegistry.String
         }
     }
 
+    public static <T> Class<? super T> generic(Class<T> type) {
+        return type;
+    }
+
     @Override
     public @NotNull Iterator<Holder<A, C, V>> iterator() {
         if (sorter == null) return super.iterator();
         return registry.values().stream().sorted(sorter).iterator();
     }
 
-    public static final class LDLibRegister<C extends ILDLRegister, V> extends AutoRegistry<LDLRegister, C, V> {
+    public static final class LDLibRegister<C extends ILDLRegister<C, V>, V> extends AutoRegistry<LDLRegister, C, V> {
         private LDLibRegister(ResourceLocation registryName,
                               Class<C> baseClazz,
                               BiFunction<LDLRegister, Class<? extends C>, V> supplier) {
@@ -135,7 +139,7 @@ public class AutoRegistry<A extends Annotation, C, V> extends LDLRegistry.String
             }, null, (annotation, clazz) -> annotation.name(), supplier, (a, b) -> b.annotation().priority() - a.annotation().priority());
         }
 
-        public static <C extends ILDLRegister, V> LDLibRegister<C, V> create(ResourceLocation registryName, Class<C> baseClazz, BiFunction<LDLRegister, Class<? extends C>, V> supplier) {
+        public static <V, C extends ILDLRegister<C, V>> LDLibRegister<C, V> create(ResourceLocation registryName, Class<C> baseClazz, BiFunction<LDLRegister, Class<? extends C>, V> supplier) {
             return new LDLibRegister<>(registryName, baseClazz, supplier);
         }
 
@@ -146,7 +150,7 @@ public class AutoRegistry<A extends Annotation, C, V> extends LDLRegistry.String
         }
     }
 
-    public static final class LDLibRegisterClient<C extends ILDLRegisterClient, V> extends AutoRegistry<LDLRegisterClient, C, V> {
+    public static final class LDLibRegisterClient<C extends ILDLRegisterClient<C, V>, V> extends AutoRegistry<LDLRegisterClient, C, V> {
         private LDLibRegisterClient(ResourceLocation registryName,
                               Class<C> baseClazz,
                               BiFunction<LDLRegisterClient, Class<? extends C>, V> supplier) {
@@ -157,7 +161,7 @@ public class AutoRegistry<A extends Annotation, C, V> extends LDLRegistry.String
             }, null, (annotation, clazz) -> annotation.name(), supplier, (a, b) -> b.annotation().priority() - a.annotation().priority());
         }
 
-        public static <C extends ILDLRegisterClient, V> LDLibRegisterClient<C, V> create(ResourceLocation registryName, Class<C> baseClazz, BiFunction<LDLRegisterClient, Class<? extends C>, V> supplier) {
+        public static <C extends ILDLRegisterClient<C, V>, V> LDLibRegisterClient<C, V> create(ResourceLocation registryName, Class<C> baseClazz, BiFunction<LDLRegisterClient, Class<? extends C>, V> supplier) {
             return new LDLibRegisterClient<>(registryName, baseClazz, supplier);
         }
 

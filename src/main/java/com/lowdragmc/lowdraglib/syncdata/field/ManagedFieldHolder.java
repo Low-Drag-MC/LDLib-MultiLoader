@@ -52,7 +52,7 @@ public final class ManagedFieldHolder {
     private void initAll() {
         this.fields = ManagedFieldUtils.getManagedFields(clazz);
         resetSyncFieldIndexMap();
-        this.rpcMethodMap = ManagedFieldUtils.getRPCMethods(clazz);
+        // this.rpcMethodMap = ManagedFieldUtils.getRPCMethods(clazz);
     }
 
     private void resetSyncFieldIndexMap() {

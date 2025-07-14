@@ -63,7 +63,7 @@ public class FluidStackAccessor extends TypesAccessor<FluidStack> {
                     updateStack.accept(newStack);
                 }, Fluids.EMPTY, forceUpdate));
         var min = 1;
-        var max = 64;
+        var max = Integer.MAX_VALUE;
         if (field.isAnnotationPresent(NumberRange.class)) {
             min = (int) field.getAnnotation(NumberRange.class).range()[0];
             max = (int) field.getAnnotation(NumberRange.class).range()[1];

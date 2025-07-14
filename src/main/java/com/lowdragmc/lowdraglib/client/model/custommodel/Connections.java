@@ -81,7 +81,7 @@ public class Connections {
                 }
             }
         }
-        // Map connections to submap indeces
+        // Map connections to submap indices
         for (int i = 0; i < 4; i++) {
             connections.fillSubmaps(i);
         }

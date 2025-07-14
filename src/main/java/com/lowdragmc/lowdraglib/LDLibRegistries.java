@@ -15,7 +15,6 @@ import com.lowdragmc.lowdraglib.utils.TypeAdapter;
 
 import java.util.function.Supplier;
 
-@SuppressWarnings("unchecked")
 public class LDLibRegistries {
     public final static AutoRegistry.LDLibRegister<TypeAdapter.ITypeAdapter, TypeAdapter.ITypeAdapter> TYPE_ADAPTERS = AutoRegistry.LDLibRegister
             .create(LDLib.id("type_adapter"), TypeAdapter.ITypeAdapter.class, AutoRegistry::noArgsInstance);
@@ -26,14 +25,14 @@ public class LDLibRegistries {
     public final static AutoRegistry.LDLibRegister<IConfigurableWidget, Supplier<IConfigurableWidget>> WIDGETS = AutoRegistry.LDLibRegister
             .create(LDLib.id("widget"), IConfigurableWidget.class, AutoRegistry::noArgsCreator);
 
-    public final static AutoRegistry.LDLibRegisterClient<IConfiguratorAccessor, IConfiguratorAccessor<?>> CONFIGURATOR_ACCESSORS = AutoRegistry.LDLibRegisterClient
-            .create(LDLib.id("configurator_accessor"), IConfiguratorAccessor.class, AutoRegistry::noArgsInstance);
+    public final static AutoRegistry.LDLibRegisterClient<IConfiguratorAccessor<?>, IConfiguratorAccessor<?>> CONFIGURATOR_ACCESSORS = AutoRegistry.LDLibRegisterClient
+            .create(LDLib.id("configurator_accessor"), AutoRegistry.generic(IConfiguratorAccessor.class), AutoRegistry::noArgsInstance);
 
     public final static AutoRegistry.LDLibRegisterClient<IGuiTexture, Supplier<IGuiTexture>> GUI_TEXTURES = AutoRegistry.LDLibRegisterClient
             .create(LDLib.id("gui_texture"), IGuiTexture.class, AutoRegistry::noArgsCreator);
 
-    public final static AutoRegistry.LDLibRegisterClient<Resource, Supplier<Resource>> RESOURCES = AutoRegistry.LDLibRegisterClient
-            .create(LDLib.id("resource"), Resource.class, AutoRegistry::noArgsCreator);
+    public final static AutoRegistry.LDLibRegisterClient<Resource<?>, Supplier<Resource<?>>> RESOURCES = AutoRegistry.LDLibRegisterClient
+            .create(LDLib.id("resource"), AutoRegistry.generic(Resource.class), AutoRegistry::noArgsCreator);
 
     public final static AutoRegistry.LDLibRegisterClient<MenuTab, Supplier<MenuTab>> MENU_TABS = AutoRegistry.LDLibRegisterClient
             .create(LDLib.id("menu_tab"), MenuTab.class, AutoRegistry::noArgsCreator);

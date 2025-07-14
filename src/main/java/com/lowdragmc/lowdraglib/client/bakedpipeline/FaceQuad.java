@@ -21,7 +21,6 @@ import org.joml.Vector3f;
  * @implNote FaceQuadBuilder
  */
 @OnlyIn(Dist.CLIENT)
-
 public class FaceQuad {
     public static final AABB BLOCK = new AABB(0, 0, 0, 1, 1, 1);
 

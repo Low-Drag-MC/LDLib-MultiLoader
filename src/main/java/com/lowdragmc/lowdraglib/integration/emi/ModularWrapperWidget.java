@@ -1,6 +1,8 @@
 package com.lowdragmc.lowdraglib.integration.emi;
 
+import com.lowdragmc.lowdraglib.gui.ingredient.IRecipeIngredientSlot;
 import com.lowdragmc.lowdraglib.gui.util.DrawerHelper;
+import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
 import com.lowdragmc.lowdraglib.integration.jei.ModularWrapper;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.api.widget.Widget;
@@ -52,14 +54,25 @@ public class ModularWrapperWidget extends Widget implements ContainerEventHandle
 
     @Override
     public List<ClientTooltipComponent> getTooltip(int mouseX, int mouseY) {
-        if (modular.tooltipTexts != null && !modular.tooltipTexts.isEmpty()) {
-            List<ClientTooltipComponent> tooltips = modular.tooltipTexts.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Collectors.toList());
-            if (modular.tooltipComponent != null) {
-                tooltips.add(DrawerHelper.getClientTooltipComponent(modular.tooltipComponent));
-            }
-            return tooltips;
+        if (modular.tooltipTexts == null || modular.tooltipTexts.isEmpty()) {
+            return super.getTooltip(mouseX, mouseY);
         }
-        return super.getTooltip(mouseX, mouseY);
+        var hovered = modular.modularUI.mainGroup.getHoverElement(mouseX + modular.getLeft(), mouseY + modular.getTop());
+        if (hovered instanceof IRecipeIngredientSlot) {
+            // don't skip the tooltip if the hovered widget is in a draggable group, as those are skipped when creating tooltips
+            if (!(hovered.getParent() instanceof DraggableScrollableWidgetGroup draggable && draggable.isUseScissor())) {
+                return super.getTooltip(mouseX, mouseY);
+            }
+        }
+
+        List<ClientTooltipComponent> tooltips = modular.tooltipTexts.stream()
+                .map(Component::getVisualOrderText)
+                .map(ClientTooltipComponent::create)
+                .collect(Collectors.toList());
+        if (modular.tooltipComponent != null) {
+            tooltips.add(DrawerHelper.getClientTooltipComponent(modular.tooltipComponent));
+        }
+        return tooltips;
     }
 
     @Override
@@ -102,7 +115,8 @@ public class ModularWrapperWidget extends Widget implements ContainerEventHandle
 
     @Override
     public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
-        return modular.keyPressed(pKeyCode, pScanCode, pModifiers);
+        modular.focused = false;
+        return modular.modularUI.mainGroup.keyPressed(pKeyCode, pScanCode, pModifiers);
     }
 
     @Override
