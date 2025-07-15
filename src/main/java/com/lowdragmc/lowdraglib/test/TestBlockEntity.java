@@ -8,15 +8,16 @@ import com.lowdragmc.lowdraglib.gui.modular.IUIHolder;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.SceneWidget;
 import com.lowdragmc.lowdraglib.syncdata.IManaged;
-import com.lowdragmc.lowdraglib.syncdata.IManagedStorage;
 import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib.syncdata.annotation.ReadOnlyManaged;
 import com.lowdragmc.lowdraglib.syncdata.blockentity.IAsyncAutoSyncBlockEntity;
-import com.lowdragmc.lowdraglib.syncdata.field.FieldManagedStorage;
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
-import com.lowdragmc.lowdraglib.syncdata.managed.IRef;
+import com.lowdragmc.lowdraglib.syncdata.ref.IRef;
+import com.lowdragmc.lowdraglib.syncdata.storage.FieldManagedStorage;
+import com.lowdragmc.lowdraglib.syncdata.storage.IManagedStorage;
 import com.lowdragmc.lowdraglib.test.sync.TestReadOnlyManaged;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -28,6 +29,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import lombok.Getter;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author KilaBash
@@ -39,6 +42,8 @@ public class TestBlockEntity extends BlockEntity implements IUIHolder.BlockEntit
     protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(TestBlockEntity.class);
     @Getter
     private final FieldManagedStorage syncStorage = new FieldManagedStorage(this);
+    @Getter
+    private final Lock asyncLock = new ReentrantLock();
 
     @DescSynced
     @Persisted
@@ -96,7 +101,7 @@ public class TestBlockEntity extends BlockEntity implements IUIHolder.BlockEntit
     @SuppressWarnings("unused")
     private boolean onDirty(TestReadOnlyManaged testManaged) {
         if (testManaged != null) {
-            for (IRef ref : testManaged.getSyncStorage().getNonLazyFields()) {
+            for (IRef<?> ref : testManaged.getSyncStorage().getNonLazyFields()) {
                 ref.update();
             }
             return testManaged.getSyncStorage().hasDirtySyncFields() ||

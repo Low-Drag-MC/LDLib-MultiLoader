@@ -312,22 +312,6 @@ public class SlotWidget extends Widget implements IRecipeIngredientSlot, IConfig
     }
 
     @Override
-    @Environment(EnvType.CLIENT)
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        Window window = Minecraft.getInstance().getWindow();
-        double mouseX = Minecraft.getInstance().mouseHandler.xpos() * window.getGuiScaledWidth() / window.getScreenWidth();
-        double mouseY = Minecraft.getInstance().mouseHandler.ypos() * window.getGuiScaledHeight() / window.getScreenHeight();
-        if (isMouseOverElement(mouseX, mouseY)) {
-            if (LDLib.isEmiLoaded()) {
-                if (EMICallWrapper.keyPressed(getXEICurrentIngredient(), keyCode, scanCode, modifiers)) {
-                    return true;
-                }
-            }
-        }
-        return super.keyPressed(keyCode, scanCode, modifiers);
-    }
-
-    @Override
     @OnlyIn(Dist.CLIENT)
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (isMouseOverElement(mouseX, mouseY) && gui != null) {

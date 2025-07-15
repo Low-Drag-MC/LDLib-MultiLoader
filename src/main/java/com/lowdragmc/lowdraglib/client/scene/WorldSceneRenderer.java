@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.world.level.block.RenderShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.minecraft.client.Camera;
@@ -26,7 +27,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -55,7 +55,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import static net.minecraft.world.level.block.RenderShape.INVISIBLE;
 
 
 /**
@@ -646,7 +645,7 @@ public abstract class WorldSceneRenderer {
         }
     }
 
-    private void renderBlocks(PoseStack poseStack, BlockRenderDispatcher blockRenderer, RenderType layer, VertexConsumerWrapper wrapperBuffer, Collection<BlockPos> renderedBlocks, @Nullable ISceneBlockRenderHook hook, float partialTicks, RandomSource random) {
+    private void renderBlocks(PoseStack poseStack, BlockRenderDispatcher blockRenderer, RenderType renderType, VertexConsumerWrapper wrapperBuffer, Collection<BlockPos> renderedBlocks, @Nullable ISceneBlockRenderHook hook, float partialTicks, RandomSource random) {
         for (BlockPos pos : renderedBlocks) {
             if (blocked != null && blocked.contains(pos)) {
                 continue;
@@ -657,21 +656,21 @@ public abstract class WorldSceneRenderer {
             BlockEntity te = world.getBlockEntity(pos);
 
             if (hook != null) {
-                hook.applyVertexConsumerWrapper(world, pos, state, wrapperBuffer, layer, partialTicks);
+                hook.applyVertexConsumerWrapper(world, pos, state, wrapperBuffer, renderType, partialTicks);
             }
             if (block == Blocks.AIR) continue;
             BakedModel model = blockRenderer.getBlockModel(state);
-            ModelData modelData = getModelData(model, state, pos, level);
+            ModelData modelData = getModelData(model, state, pos, world);
 
-            if (state.getRenderShape() != INVISIBLE && model.getRenderTypes(state, random, modelData).contains(renderType)) {
+            if (state.getRenderShape() == RenderShape.MODEL && model.getRenderTypes(state, random, modelData).contains(renderType)) {
                 poseStack.pushPose();
                 poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
-                blockRenderDispatcher.getModelRenderer().tesselateBlock(level, blockModel, state, pos,
-                        poseStack, consumer, true, random, state.getSeed(pos),
+                blockRenderer.getModelRenderer().tesselateBlock(world, model, state, pos,
+                        poseStack, wrapperBuffer, true, random, state.getSeed(pos),
                         OverlayTexture.NO_OVERLAY, modelData, renderType);
                 poseStack.popPose();
             }
-            if (!fluidState.isEmpty() && ItemBlockRenderTypes.getRenderLayer(fluidState) == layer) { // I dont want to do this fxxk wrapper
+            if (!fluidState.isEmpty() && ItemBlockRenderTypes.getRenderLayer(fluidState) == renderType) {
                 wrapperBuffer.addOffset((pos.getX() - (pos.getX() & 15)), (pos.getY() - (pos.getY() & 15)), (pos.getZ() - (pos.getZ() & 15)));
                 blockRenderer.renderLiquid(pos, world, wrapperBuffer, state, fluidState);
             }
@@ -683,11 +682,10 @@ public abstract class WorldSceneRenderer {
         }
     }
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static ModelData getModelData(BakedModel model, BlockState state, BlockPos pos, BlockAndTintGetter level) {
+    public static ModelData getModelData(BakedModel model, BlockState state, BlockPos pos, Level level) {
         ModelData modelData = level.getModelData(pos);
         if (modelData == null || modelData == ModelData.EMPTY) {
-            var be = level.getExistingBlockEntity(pos);
+            var be = level.getBlockEntity(pos);
             if (be != null) {
                 modelData = be.getModelData();
             }

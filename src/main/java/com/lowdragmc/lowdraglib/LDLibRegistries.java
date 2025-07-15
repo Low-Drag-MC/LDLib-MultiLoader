@@ -26,13 +26,13 @@ public class LDLibRegistries {
             .create(LDLib.id("widget"), IConfigurableWidget.class, AutoRegistry::noArgsCreator);
 
     public final static AutoRegistry.LDLibRegisterClient<IConfiguratorAccessor<?>, IConfiguratorAccessor<?>> CONFIGURATOR_ACCESSORS = AutoRegistry.LDLibRegisterClient
-            .create(LDLib.id("configurator_accessor"), AutoRegistry.generic(IConfiguratorAccessor.class), AutoRegistry::noArgsInstance);
+            .create(LDLib.id("configurator_accessor"), (Class<IConfiguratorAccessor<?>>) (Class<?>) IConfiguratorAccessor.class, AutoRegistry::noArgsInstance);
 
     public final static AutoRegistry.LDLibRegisterClient<IGuiTexture, Supplier<IGuiTexture>> GUI_TEXTURES = AutoRegistry.LDLibRegisterClient
             .create(LDLib.id("gui_texture"), IGuiTexture.class, AutoRegistry::noArgsCreator);
 
     public final static AutoRegistry.LDLibRegisterClient<Resource<?>, Supplier<Resource<?>>> RESOURCES = AutoRegistry.LDLibRegisterClient
-            .create(LDLib.id("resource"), AutoRegistry.generic(Resource.class), AutoRegistry::noArgsCreator);
+            .create(LDLib.id("resource"), (Class<Resource<?>>) (Class<?>) Resource.class, AutoRegistry::noArgsCreator);
 
     public final static AutoRegistry.LDLibRegisterClient<MenuTab, Supplier<MenuTab>> MENU_TABS = AutoRegistry.LDLibRegisterClient
             .create(LDLib.id("menu_tab"), MenuTab.class, AutoRegistry::noArgsCreator);

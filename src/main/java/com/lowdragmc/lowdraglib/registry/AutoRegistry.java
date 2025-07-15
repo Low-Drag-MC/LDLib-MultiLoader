@@ -118,10 +118,6 @@ public class AutoRegistry<A extends Annotation, C, V> extends LDLRegistry.String
         }
     }
 
-    public static <T> Class<? super T> generic(Class<T> type) {
-        return type;
-    }
-
     @Override
     public @NotNull Iterator<Holder<A, C, V>> iterator() {
         if (sorter == null) return super.iterator();

@@ -5,6 +5,7 @@ import com.lowdragmc.lowdraglib.gui.widget.SlotWidget;
 import com.lowdragmc.lowdraglib.gui.widget.TankWidget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.integration.jei.IngredientIO;
+import com.lowdragmc.lowdraglib.misc.ItemStackTransfer;
 import com.lowdragmc.lowdraglib.misc.TagOrCycleFluidTransfer;
 import com.lowdragmc.lowdraglib.misc.TagOrCycleItemStackTransfer;
 import com.mojang.datafixers.util.Either;
@@ -13,6 +14,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
@@ -20,7 +22,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
@@ -118,16 +120,19 @@ public class TestXEIWidgetGroup extends WidgetGroup {
                 .setYScrollBarWidth(6).setXScrollBarHeight(6);
 
         ItemStack potion = Items.LINGERING_POTION.getDefaultInstance();
-        PotionUtils.setPotion(potion, Potions.LUCK);
+        potion.set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.LUCK));
         draggableGroup.addWidget(new SlotWidget(new ItemStackTransfer(potion), 0, 0, 0, false, false)
                 .setBackgroundTexture(SlotWidget.ITEM_SLOT_TEXTURE)
                 .setIngredientIO(IngredientIO.CATALYST));
         potion = Items.SPLASH_POTION.getDefaultInstance();
-        PotionUtils.setPotion(potion, Potions.STRONG_POISON);
+        potion.set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.STRONG_POISON));
         draggableGroup.addWidget(new SlotWidget(new ItemStackTransfer(potion), 0, 18, 0, false, false)
                 .setBackgroundTexture(SlotWidget.ITEM_SLOT_TEXTURE)
                 .setIngredientIO(IngredientIO.OUTPUT));
-        draggableGroup.addWidget(new TankWidget(new FluidStorage(FluidStack.create(Fluids.FLOWING_WATER, 20000)), 0, 36, 0, 18, 18, false, false)
+
+        tank = new FluidTank(20000);
+        tank.setFluid(new FluidStack(Fluids.WATER, 20000));
+        draggableGroup.addWidget(new TankWidget(tank, 0, 36, 0, 18, 18, false, false)
                 .setBackground(TankWidget.FLUID_SLOT_TEXTURE)
                 .setIngredientIO(IngredientIO.INPUT));
 
