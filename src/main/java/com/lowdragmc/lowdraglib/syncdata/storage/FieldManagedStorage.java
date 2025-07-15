@@ -81,6 +81,7 @@ public class FieldManagedStorage implements IManagedStorage {
             if (initialized) {
                 return;
             }
+            initialized = true;
             ManagedKey[] fields = owner.getFieldHolder().getFields();
 
             var result = ManagedFieldUtils.getFieldRefs(fields, owner, (ref, index, changed) -> {
@@ -107,7 +108,6 @@ public class FieldManagedStorage implements IManagedStorage {
                 initUpdateListeners();
                 initBlockEntityManagedFeature();
             }
-            initialized = true;
         } finally {
             lock.unlock();
         }

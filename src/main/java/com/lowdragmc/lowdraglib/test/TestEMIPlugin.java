@@ -36,7 +36,7 @@ public class TestEMIPlugin {
 
         @Override
         public @Nullable ResourceLocation getId() {
-            return LDLib.id("test_recipe");
+            return LDLib.id("/test_recipe");
         }
     }
 }
