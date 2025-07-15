@@ -99,7 +99,7 @@ runs {
         modSource project.sourceSets.main
 
         dependencies {
-            runtime 'org.lwjgl:lwjgl-yoga:3.3.6'
+            runtime 'org.lwjgl:lwjgl-yoga:3.3.3'
         }
     }
 
