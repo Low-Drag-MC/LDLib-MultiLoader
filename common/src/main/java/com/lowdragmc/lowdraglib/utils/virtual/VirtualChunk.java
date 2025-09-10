@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import it.unimi.dsi.fastutil.shorts.ShortList;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.ticks.BlackholeTickAccess;
+import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.TickContainerAccess;
 
 import javax.annotation.Nullable;
@@ -36,33 +38,33 @@ public class VirtualChunk extends LevelChunk {
 	final int x;
 	final int z;
 
-	private final LevelChunkSection[] sections;
-
 	public VirtualChunk(DummyWorld world, int x, int z) {
-		super(world, new ChunkPos(x, z));
+		super(
+            world,
+            new ChunkPos(x, z),
+            UpgradeData.EMPTY,
+            new LevelChunkTicks<>(),
+            new LevelChunkTicks<>(),
+            0L,
+            Util.make(new LevelChunkSection[world.getSectionsCount()], sections -> {
+                for (int i = 0; i < sections.length; i++) {
+                    sections[i] = new VirtualChunkSection(world, new ChunkPos(x, z), i << 4);
+                }
+            }),
+            null,
+            null
+            );
+
 		this.needsLight = true;
 		this.x = x;
 		this.z = z;
-
-		int sectionCount = world.getSectionsCount();
-		this.sections = new LevelChunkSection[sectionCount];
-
-		for (int i = 0; i < sectionCount; i++) {
-			sections[i] = new VirtualChunkSection(this, i << 4);
-		}
-
 	}
 
 	public DummyWorld getDummyWorld() {
 		return (DummyWorld) this.getLevel();
 	}
 
-	@Override
-	public LevelChunkSection[] getSections() {
-		return sections;
-	}
-
-	@Override
+    @Override
 	public ChunkStatus getStatus() {
 		return ChunkStatus.LIGHT;
 	}
