@@ -145,6 +145,7 @@ public class LabelWidget extends Widget implements IConfigurableWidget {
                     this.lastTextValue = latest;
                     writeUpdateInfo(-2, buffer -> buffer.writeComponent(this.component));
                 }
+                return;
             }
             String latest = textSupplier.get();
             if (!latest.equals(lastTextValue)) {
