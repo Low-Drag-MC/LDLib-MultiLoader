@@ -619,6 +619,7 @@ public class WidgetGroup extends Widget implements IGhostIngredientTarget, IIngr
         for (int i = widgets.size() - 1; i >= 0; i--) {
             Widget widget = widgets.get(i);
             if(widget.isVisible() && widget.isActive() && widget.mouseClicked(mouseX, mouseY, button)) {
+                widget.setFocus(true);
                 return true;
             }
         }
