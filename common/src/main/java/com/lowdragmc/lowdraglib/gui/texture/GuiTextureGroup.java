@@ -2,6 +2,7 @@ package com.lowdragmc.lowdraglib.gui.texture;
 
 import com.lowdragmc.lowdraglib.gui.editor.annotation.Configurable;
 import com.lowdragmc.lowdraglib.gui.editor.annotation.LDLRegister;
+import com.lowdragmc.lowdraglib.gui.editor.annotation.NumberRange;
 import com.lowdragmc.lowdraglib.gui.editor.data.resource.Resource;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -10,6 +11,9 @@ import net.minecraft.client.gui.GuiGraphics;
 @LDLRegister(name = "group_texture", group = "texture")
 public class GuiTextureGroup extends TransformTexture {
 
+    @Configurable
+    @NumberRange(range = {-Integer.MAX_VALUE, Integer.MAX_VALUE}, wheel = 1)
+    public int inflateWidth = 0, inflateHeight = 0;
     @Configurable(collapse = false)
     public IGuiTexture[] textures;
 
@@ -38,7 +42,7 @@ public class GuiTextureGroup extends TransformTexture {
     @Environment(EnvType.CLIENT)
     protected void drawInternal(GuiGraphics graphics, int mouseX, int mouseY, float x, float y, int width, int height) {
         for (IGuiTexture texture : textures) {
-            texture.draw(graphics, mouseX,mouseY,  x, y, width, height);
+            texture.draw(graphics, mouseX,mouseY, x, y, width + inflateWidth, height + inflateHeight);
         }
     }
 
