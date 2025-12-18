@@ -112,7 +112,7 @@ public class ResourceContainer<T, C extends Widget> extends WidgetGroup {
             /// so that pop out text, and any textures larger than their area can be viewed more effectively
             @Override
             @Environment(EnvType.CLIENT)
-            public void drawInBackground(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+            public void drawWidgetsBackground(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
                 drawBackgroundTexture(graphics, mouseX, mouseY);
                 java.util.List<Widget> hoverWidgets = new ArrayList<>();
                 for (Widget widget : super.widgets) {
