@@ -12,11 +12,13 @@ import com.lowdragmc.lowdraglib.gui.widget.*;
 import com.lowdragmc.lowdraglib.utils.LocalizationUtils;
 import com.lowdragmc.lowdraglib.utils.Position;
 import com.lowdragmc.lowdraglib.utils.Size;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Either;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.Util;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.EndTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
@@ -24,9 +26,12 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import org.apache.commons.lang3.function.TriFunction;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.*;
@@ -101,7 +106,40 @@ public class ResourceContainer<T, C extends Widget> extends WidgetGroup {
     @Override
     public void initWidget() {
         Size size = getSize();
-        container = new DraggableScrollableWidgetGroup(1, 2, size.width - 2, size.height - 2);
+        container = new DraggableScrollableWidgetGroup(1, 2, size.width - 2, size.height - 2) {
+
+            /// This changes the render order so that any elements under the mouse will render on top of the other elements,
+            /// so that pop out text, and any textures larger than their area can be viewed more effectively
+            @Override
+            @Environment(EnvType.CLIENT)
+            public void drawInBackground(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+                drawBackgroundTexture(graphics, mouseX, mouseY);
+                java.util.List<Widget> hoverWidgets = new ArrayList<>();
+                for (Widget widget : super.widgets) {
+                    if(widget.isVisible()) {
+                        if(Widget.isMouseOver(widget.getPositionX(), widget.getPositionY(), widget.getSizeWidth(), widget.getSizeHeight(), mouseX, mouseY)) hoverWidgets.add(widget);
+                        else {
+                            RenderSystem.setShaderColor(1, 1, 1, 1);
+                            RenderSystem.enableBlend();
+                            if(widget.inAnimate()) {
+                                widget.getAnimation().drawInBackground(graphics, mouseX, mouseY, partialTicks);
+                            } else {
+                                widget.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+                            }
+                        }
+                    }
+                }
+                for (Widget widget : hoverWidgets) {
+                    RenderSystem.setShaderColor(1, 1, 1, 1);
+                    RenderSystem.enableBlend();
+                    if(widget.inAnimate()) {
+                        widget.getAnimation().drawInBackground(graphics, mouseX, mouseY, partialTicks);
+                    } else {
+                        widget.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+                    }
+                }
+            }
+        };
         container.setYScrollBarWidth(4).setYBarStyle(null, ColorPattern.T_WHITE.rectTexture().setRadius(2));
         addWidget(container);
         reBuild();
@@ -152,7 +190,7 @@ public class ResourceContainer<T, C extends Widget> extends WidgetGroup {
                         (IGuiTexture) key.map(l -> Icons.LOCAL, r -> Icons.GLOBAL.copy().setDynamicColor(ColorPattern::generateRainbowColor)))
                         .setHoverTooltips(key.left().isPresent() ? "ldlib.gui.editor.menu.resource.builtin" : "ldlib.gui.editor.menu.resource.static"));
             }
-            selectableWidgetGroup.addWidget(new ImageWidget(0, size.height + 3, size.width, 10, new TextTexture(resource.getResourceName(key)).setWidth(size.width).setType(TextTexture.TextType.ROLL)));
+            selectableWidgetGroup.addWidget(new ImageWidget(0, size.height + 3, size.width, 10, new TextTexture(resource.getResourceName(key)).setWidth(size.width).setBackgroundColor(new Color(56,56,56).getRGB()).setInflateBackgroundY(4, 2).setType(TextTexture.TextType.POP_OUT)));
             selectableWidgetGroup.setOnSelected(s -> selected = key);
             selectableWidgetGroup.setOnUnSelected(s -> selected = null);
             selectableWidgetGroup.setSelectedTexture(ColorPattern.T_GRAY.rectTexture());
@@ -323,5 +361,4 @@ public class ResourceContainer<T, C extends Widget> extends WidgetGroup {
             reBuild();
         }
     }
-
 }
