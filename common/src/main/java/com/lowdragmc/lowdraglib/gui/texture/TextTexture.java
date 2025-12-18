@@ -16,6 +16,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import org.joml.Vector4f;
 
+import java.awt.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
@@ -30,6 +31,9 @@ public class TextTexture extends TransformTexture {
     @Configurable
     @NumberColor
     public int color;
+
+    @Configurable
+    public IGuiTexture backgroundTexture;
 
     @Configurable
     @NumberColor
@@ -166,7 +170,7 @@ public class TextTexture extends TransformTexture {
         updateTick();
         if (backgroundColor != 0) {
             if (!(type == TextType.POP_OUT || type == TextType.LEFT_POP_OUT || type == TextType.RIGHT_POP_OUT)) {
-                DrawerHelper.drawSolidRect(graphics, (int) x - inflateBackgroundX, (int) y - inflateBackgroundY, width + inflateBackgroundX * 2, height + inflateBackgroundY * 2, backgroundColor);
+                drawBackgroundInternal(graphics, mouseX, mouseY, x, y, width, height);
             }
         }
         graphics.pose().pushPose();
@@ -201,13 +205,13 @@ public class TextTexture extends TransformTexture {
             if (Widget.isMouseOver((int) x, (int) y, width, height, mouseX, mouseY) && texts.size() > 1) {
                 if (type == TextType.HIDE) drawRollTextLine(graphics, x, y, width, height, fontRenderer, textH, text);
                 else if (type == TextType.POP_OUT) {
-                    DrawerHelper.drawSolidRect(graphics, (int) x + width / 2 - fontRenderer.width(text) / 2 - inflateBackgroundX, (int) y + height / 2 - fontRenderer.lineHeight / 2 - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2, backgroundColor);
+                    drawBackgroundInternal(graphics, mouseX, mouseY, (int) x + width / 2 - fontRenderer.width(text) / 2 - inflateBackgroundX, (int) y + height / 2 - fontRenderer.lineHeight / 2 - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2);
                     graphics.drawString(fontRenderer, text, (int) x + width / 2 - fontRenderer.width(text) / 2, (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color);
                 } else if (type == TextType.LEFT_POP_OUT) {
-                    DrawerHelper.drawSolidRect(graphics, (int) x - inflateBackgroundX, (int) y + height / 2 - fontRenderer.lineHeight / 2 - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2, backgroundColor);
+                    drawBackgroundInternal(graphics, mouseX, mouseY, (int) x - inflateBackgroundX, (int) y + height / 2 - fontRenderer.lineHeight / 2 - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2);
                     graphics.drawString(fontRenderer, text, (int) x - inflateBackgroundY, (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color);
                 } else if (type == TextType.RIGHT_POP_OUT) {
-                    DrawerHelper.drawSolidRect(graphics, (int) x + width - fontRenderer.width(text) - inflateBackgroundX, (int) y + height / 2 - fontRenderer.lineHeight / 2 - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2, backgroundColor);
+                    drawBackgroundInternal(graphics, mouseX, mouseY, (int) x + width - fontRenderer.width(text) - inflateBackgroundX, (int) y + height / 2 - fontRenderer.lineHeight / 2 - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2);
                     graphics.drawString(fontRenderer, text, (int) x + width - fontRenderer.width(text), (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color);
                 }
             } else {
@@ -244,6 +248,16 @@ public class TextTexture extends TransformTexture {
         }
         graphics.pose().popPose();
         RenderSystem.setShaderColor(1, 1, 1, 1);
+    }
+
+    @Environment(EnvType.CLIENT)
+    private void drawBackgroundInternal(GuiGraphics graphics, int mouseX, int mouseY, float x, float y, int width, int height) {
+        if (backgroundTexture != null) {
+            Color color = new Color(backgroundColor);
+            graphics.setColor((float) color.getRed() / 255, (float) color.getGreen() / 255, (float) color.getBlue() / 255, (float) color.getAlpha() / 255);
+            backgroundTexture.draw(graphics, mouseX, mouseY, (int) x - inflateBackgroundX, (int) y - inflateBackgroundY, width + inflateBackgroundX * 2, height + inflateBackgroundY * 2);
+        }
+        else DrawerHelper.drawSolidRect(graphics, (int) x - inflateBackgroundX, (int) y - inflateBackgroundY, width + inflateBackgroundX * 2, height + inflateBackgroundY * 2, backgroundColor);
     }
 
     @Environment(EnvType.CLIENT)
