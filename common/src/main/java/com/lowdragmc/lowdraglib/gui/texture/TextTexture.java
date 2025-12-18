@@ -35,6 +35,10 @@ public class TextTexture extends TransformTexture {
     @NumberColor
     public int backgroundColor;
 
+    @Configurable
+    @NumberRange(range = {Integer.MIN_VALUE, Integer.MAX_VALUE})
+    public int inflateBackgroundX = 0, inflateBackgroundY = 0;
+
     @Configurable(tips = "ldlib.gui.editor.tips.image_text_width")
     @NumberRange(range = {1, Integer.MAX_VALUE})
     public int width;
@@ -126,10 +130,10 @@ public class TextTexture extends TransformTexture {
         if (LDLib.isClient()) {
             if (this.width > 0) {
                 texts = Minecraft.getInstance()
-                        .font.getSplitter()
-                        .splitLines(text, width, Style.EMPTY)
-                        .stream().map(FormattedText::getString)
-                        .collect(Collectors.toList());
+                    .font.getSplitter()
+                    .splitLines(text, width, Style.EMPTY)
+                    .stream().map(FormattedText::getString)
+                    .collect(Collectors.toList());
                 if (texts.isEmpty()) {
                     texts = Collections.singletonList(text);
                 }
@@ -145,12 +149,25 @@ public class TextTexture extends TransformTexture {
         return this;
     }
 
+    public TextTexture setInflateBackgroundY(int inflateBackground) {
+        this.inflateBackgroundX = inflateBackground;
+        this.inflateBackgroundY = inflateBackground;
+        return this;
+    }
+    public TextTexture setInflateBackgroundY(int inflateBackgroundX, int inflateBackgroundY) {
+        this.inflateBackgroundX = inflateBackgroundX;
+        this.inflateBackgroundY = inflateBackgroundY;
+        return this;
+    }
+
     @Environment(EnvType.CLIENT)
     @Override
     protected void drawInternal(GuiGraphics graphics, int mouseX, int mouseY, float x, float y, int width, int height) {
         updateTick();
         if (backgroundColor != 0) {
-            DrawerHelper.drawSolidRect(graphics, (int) x, (int) y, width, height, backgroundColor);
+            if (!(type == TextType.POP_OUT || type == TextType.LEFT_POP_OUT || type == TextType.RIGHT_POP_OUT)) {
+                DrawerHelper.drawSolidRect(graphics, (int) x - inflateBackgroundX, (int) y - inflateBackgroundY, width + inflateBackgroundX * 2, height + inflateBackgroundY * 2, backgroundColor);
+            }
         }
         graphics.pose().pushPose();
         graphics.pose().translate(0, 0, 400);
@@ -180,9 +197,19 @@ public class TextTexture extends TransformTexture {
                 float _y = y + (height - textH) / 2f + i * fontRenderer.lineHeight;
                 graphics.drawString(fontRenderer, line, (int) (x + width - lineWidth), (int) _y, color, dropShadow);
             }
-        } else if (type == TextType.HIDE) {
+        } else if (type == TextType.HIDE || type == TextType.POP_OUT || type == TextType.LEFT_POP_OUT || type == TextType.RIGHT_POP_OUT) {
             if (Widget.isMouseOver((int) x, (int) y, width, height, mouseX, mouseY) && texts.size() > 1) {
-                drawRollTextLine(graphics, x, y, width, height, fontRenderer, textH, text);
+                if (type == TextType.HIDE) drawRollTextLine(graphics, x, y, width, height, fontRenderer, textH, text);
+                else if (type == TextType.POP_OUT) {
+                    DrawerHelper.drawSolidRect(graphics, (int) x + width / 2 - fontRenderer.width(text) / 2 - inflateBackgroundX, (int) y + height / 2 - fontRenderer.lineHeight / 2 - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2, backgroundColor);
+                    graphics.drawString(fontRenderer, text, (int) x + width / 2 - fontRenderer.width(text) / 2, (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color);
+                } else if (type == TextType.LEFT_POP_OUT) {
+                    DrawerHelper.drawSolidRect(graphics, (int) x - inflateBackgroundX, (int) y + height / 2 - fontRenderer.lineHeight / 2 - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2, backgroundColor);
+                    graphics.drawString(fontRenderer, text, (int) x - inflateBackgroundY, (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color);
+                } else if (type == TextType.RIGHT_POP_OUT) {
+                    DrawerHelper.drawSolidRect(graphics, (int) x + width - fontRenderer.width(text) - inflateBackgroundX, (int) y + height / 2 - fontRenderer.lineHeight / 2 - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2, backgroundColor);
+                    graphics.drawString(fontRenderer, text, (int) x + width - fontRenderer.width(text), (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color);
+                }
             } else {
                 String line = texts.get(0) + (texts.size() > 1 ? ".." : "");
                 drawTextLine(graphics, x, y, width, height, fontRenderer, textH, line);
@@ -208,6 +235,12 @@ public class TextTexture extends TransformTexture {
                 float _y = y + (height - textH) / 2f;
                 graphics.drawString(fontRenderer, texts.get(0), (int) x, (int) _y, color, dropShadow);
             }
+        } else if (type == TextType.LEFT_OVERFLOW) {
+            graphics.drawString(fontRenderer, text, (int) x, (int) y, color);
+        } else if (type == TextType.RIGHT_OVERFLOW) {
+            graphics.drawString(fontRenderer, text, (int) x + width - fontRenderer.width(text), (int) y, color);
+        } else if (type == TextType.OVERFLOW) {
+            graphics.drawString(fontRenderer, text, (int) x + width / 2 - fontRenderer.width(text) / 2, (int) y, color);
         }
         graphics.pose().popPose();
         RenderSystem.setShaderColor(1, 1, 1, 1);
@@ -244,12 +277,18 @@ public class TextTexture extends TransformTexture {
     public enum TextType{
         NORMAL,
         HIDE,
+        OVERFLOW,
+        POP_OUT,
         ROLL,
         ROLL_ALWAYS,
         LEFT,
         RIGHT,
+        RIGHT_OVERFLOW,
+        RIGHT_POP_OUT,
         LEFT_HIDE,
         LEFT_ROLL,
-        LEFT_ROLL_ALWAYS
+        LEFT_ROLL_ALWAYS,
+        LEFT_OVERFLOW,
+        LEFT_POP_OUT
     }
 }
