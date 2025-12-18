@@ -2,6 +2,7 @@ package com.lowdragmc.lowdraglib.gui.texture;
 
 import com.lowdragmc.lowdraglib.gui.editor.annotation.Configurable;
 import com.lowdragmc.lowdraglib.gui.editor.annotation.LDLRegister;
+import com.lowdragmc.lowdraglib.gui.editor.annotation.NumberRange;
 import com.lowdragmc.lowdraglib.gui.editor.data.resource.Resource;
 import lombok.Getter;
 import net.fabricmc.api.EnvType;
@@ -23,6 +24,12 @@ public class ProgressTexture extends TransformTexture {
     @Configurable
     @Getter
     protected IGuiTexture filledBarArea;
+    @Configurable
+    @Getter
+    protected boolean smoothProgress = true;
+    @Configurable
+    @NumberRange(range = {1, Integer.MAX_VALUE})
+    protected int progressSteps = 16;
 
     @Getter
     protected double progress;
@@ -77,10 +84,12 @@ public class ProgressTexture extends TransformTexture {
             emptyBarArea.draw(graphics, mouseX, mouseY, x, y, width, height);
         }
         if (filledBarArea != null) {
-            float drawnU = (float) fillDirection.getDrawnU(progress);
-            float drawnV = (float) fillDirection.getDrawnV(progress);
-            float drawnWidth = (float) fillDirection.getDrawnWidth(progress);
-            float drawnHeight = (float) fillDirection.getDrawnHeight(progress);
+            double p = progress;
+            if (!smoothProgress) p = (double) Math.round(p * progressSteps) / progressSteps;
+            float drawnU = (float) fillDirection.getDrawnU(p);
+            float drawnV = (float) fillDirection.getDrawnV(p);
+            float drawnWidth = (float) fillDirection.getDrawnWidth(p);
+            float drawnHeight = (float) fillDirection.getDrawnHeight(p);
             float X = x + drawnU * width;
             float Y = y + drawnV * height;
             float W = width * drawnWidth;
