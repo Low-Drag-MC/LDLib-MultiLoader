@@ -1,9 +1,11 @@
 package com.lowdragmc.lowdraglib.gui.widget;
 
+import com.lowdragmc.lowdraglib.gui.editor.annotation.Configurable;
 import com.lowdragmc.lowdraglib.gui.texture.ColorBorderTexture;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.utils.Position;
 import com.lowdragmc.lowdraglib.utils.Size;
+import lombok.Getter;
 import lombok.Setter;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -19,6 +21,10 @@ public class SelectableWidgetGroup extends WidgetGroup implements DraggableScrol
     protected Consumer<SelectableWidgetGroup> onUnSelected;
     @Setter
     private Object prefab;
+    @Configurable
+    @Getter
+    @Setter
+    private boolean overlayUnderWidgets = false;
 
     public SelectableWidgetGroup(int x, int y, int width, int height) {
         super(x, y, width, height);
@@ -59,10 +65,11 @@ public class SelectableWidgetGroup extends WidgetGroup implements DraggableScrol
     @Override
     @Environment(EnvType.CLIENT)
     public void drawInBackground(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+        if(!overlayUnderWidgets) super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
         if (isSelected && selectedTexture != null) {
             selectedTexture.draw(graphics, mouseX, mouseY, getPosition().x, getPosition().y, getSize().width, getSize().height);
         }
+        if(overlayUnderWidgets) super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
     }
 
     @Override

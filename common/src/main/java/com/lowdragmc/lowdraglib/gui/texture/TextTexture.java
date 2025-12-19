@@ -36,7 +36,6 @@ public class TextTexture extends TransformTexture {
 
     @Configurable
     @Getter
-    @Setter
     public IGuiTexture backgroundTexture;
 
     @Configurable
@@ -169,6 +168,11 @@ public class TextTexture extends TransformTexture {
     public TextTexture setInflateBackgroundY(int inflateBackgroundX, int inflateBackgroundY) {
         this.inflateBackgroundX = inflateBackgroundX;
         this.inflateBackgroundY = inflateBackgroundY;
+        return this;
+    }
+
+    public TextTexture setBackgroundTexture(IGuiTexture backgroundTexture) {
+        this.backgroundTexture = backgroundTexture;
         return this;
     }
 

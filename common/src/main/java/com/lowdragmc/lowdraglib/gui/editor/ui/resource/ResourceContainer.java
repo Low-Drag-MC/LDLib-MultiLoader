@@ -190,10 +190,11 @@ public class ResourceContainer<T, C extends Widget> extends WidgetGroup {
                         (IGuiTexture) key.map(l -> Icons.LOCAL, r -> Icons.GLOBAL.copy().setDynamicColor(ColorPattern::generateRainbowColor)))
                         .setHoverTooltips(key.left().isPresent() ? "ldlib.gui.editor.menu.resource.builtin" : "ldlib.gui.editor.menu.resource.static"));
             }
-            selectableWidgetGroup.addWidget(new ImageWidget(0, size.height + 3, size.width, 10, new TextTexture(resource.getResourceName(key)).setWidth(size.width).setBackgroundColor(new Color(56,56,56).getRGB()).setInflateBackgroundY(4, 2).setType(TextTexture.TextType.POP_OUT)));
+            selectableWidgetGroup.addWidget(new ImageWidget(0, size.height + 3, size.width, 10, new TextTexture(resource.getResourceName(key)).setWidth(size.width).setInflateBackgroundY(4, 2).setBackgroundTexture(TankWidget.FLUID_SLOT_TEXTURE).setBackgroundColor(-1).setType(TextTexture.TextType.POP_OUT)));
             selectableWidgetGroup.setOnSelected(s -> selected = key);
             selectableWidgetGroup.setOnUnSelected(s -> selected = null);
             selectableWidgetGroup.setSelectedTexture(ColorPattern.T_GRAY.rectTexture());
+            selectableWidgetGroup.setOverlayUnderWidgets(true);
             size = selectableWidgetGroup.getSize();
 
             if (size.width >= width - 5) {
