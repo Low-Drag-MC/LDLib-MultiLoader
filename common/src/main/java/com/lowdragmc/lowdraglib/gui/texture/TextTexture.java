@@ -2,10 +2,12 @@ package com.lowdragmc.lowdraglib.gui.texture;
 
 import com.lowdragmc.lowdraglib.LDLib;
 import com.lowdragmc.lowdraglib.gui.editor.annotation.*;
+import com.lowdragmc.lowdraglib.gui.editor.data.resource.Resource;
 import com.lowdragmc.lowdraglib.gui.util.DrawerHelper;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.utils.LocalizationUtils;
 import com.mojang.blaze3d.systems.RenderSystem;
+import lombok.Getter;
 import lombok.Setter;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -33,6 +35,8 @@ public class TextTexture extends TransformTexture {
     public int color;
 
     @Configurable
+    @Getter
+    @Setter
     public IGuiTexture backgroundTexture;
 
     @Configurable
@@ -85,6 +89,10 @@ public class TextTexture extends TransformTexture {
         this("", -1);
         setSupplier(text);
         setDropShadow(true);
+    }
+    public TextTexture(String text, IGuiTexture backgroundTexture) {
+        this(text);
+        this.backgroundTexture = backgroundTexture;
     }
 
     public TextTexture setSupplier(Supplier<String> supplier) {
@@ -250,12 +258,18 @@ public class TextTexture extends TransformTexture {
         RenderSystem.setShaderColor(1, 1, 1, 1);
     }
 
+    @Override
+    public void setUIResource(Resource<IGuiTexture> texturesResource) {
+        if(backgroundTexture != null) backgroundTexture.setUIResource(texturesResource);
+    }
+
     @Environment(EnvType.CLIENT)
     private void drawBackgroundInternal(GuiGraphics graphics, int mouseX, int mouseY, float x, float y, int width, int height) {
         if (backgroundTexture != null) {
             Color color = new Color(backgroundColor);
             graphics.setColor((float) color.getRed() / 255, (float) color.getGreen() / 255, (float) color.getBlue() / 255, (float) color.getAlpha() / 255);
             backgroundTexture.draw(graphics, mouseX, mouseY, (int) x - inflateBackgroundX, (int) y - inflateBackgroundY, width + inflateBackgroundX * 2, height + inflateBackgroundY * 2);
+            graphics.setColor(1,1,1,1);
         }
         else DrawerHelper.drawSolidRect(graphics, (int) x - inflateBackgroundX, (int) y - inflateBackgroundY, width + inflateBackgroundX * 2, height + inflateBackgroundY * 2, backgroundColor);
     }
