@@ -244,7 +244,8 @@ public class SlotWidget extends Widget implements IRecipeIngredientSlot, IConfig
                 itemStack = gui.getModularUIContainer().getCarried();
                 if (!itemStack.isEmpty() && splitSize > 1 && AbstractContainerMenu.canItemQuickReplace(slotReference, itemStack, true)) {
                     itemStack = itemStack.copy();
-                    itemStack.grow(AbstractContainerMenu.getQuickCraftPlaceCount(modularUIGui.getQuickCraftSlots(), modularUIGui.dragSplittingLimit, itemStack));
+                    itemStack.setCount(getRealStack(slotReference.getItem()).getCount());
+                    itemStack.grow(AbstractContainerMenu.getQuickCraftPlaceCount(modularUIGui.getQuickCraftSlots(), modularUIGui.dragSplittingLimit, gui.getModularUIContainer().getCarried()));
                     int k = Math.min(itemStack.getMaxStackSize(), slotReference.getMaxStackSize(itemStack));
                     if (itemStack.getCount() > k) {
                         itemStack.setCount(k);
