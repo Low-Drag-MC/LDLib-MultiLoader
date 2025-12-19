@@ -105,6 +105,38 @@ public class ResourceTexture extends TransformTexture {
         return this;
     }
 
+    public ResourceTexture setImageWidthHeight(float width, float height) {
+        this.imageWidth = width;
+        this.imageHeight = height;
+        return this;
+    }
+
+    public ResourceTexture setImageWidth(float width) {
+        this.imageWidth = width;
+        return this;
+    }
+
+    public ResourceTexture setImageHeight(float height) {
+        this.imageHeight = height;
+        return this;
+    }
+
+    public ResourceTexture setImageOffset(float x, float y) {
+        this.offsetX = x;
+        this.offsetY = y;
+        return this;
+    }
+
+    public ResourceTexture setImageOffsetX(float x) {
+        this.offsetX = x;
+        return this;
+    }
+
+    public ResourceTexture setImageOffsetY(float y) {
+        this.offsetY = y;
+        return this;
+    }
+
     public static ResourceTexture fromSpirit(ResourceLocation texture) {
         if (LDLib.isClient()) {
             var sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);

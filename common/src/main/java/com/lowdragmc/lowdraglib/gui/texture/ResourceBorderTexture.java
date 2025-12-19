@@ -18,7 +18,9 @@ public class ResourceBorderTexture extends ResourceTexture {
     public static final ResourceBorderTexture BAR = new ResourceBorderTexture("ldlib:textures/gui/button_common.png", 180, 20, 1, 1);
     public static final ResourceBorderTexture SELECTED = new ResourceBorderTexture("ldlib:textures/gui/selected.png", 16, 16, 2, 2);
 
-    public static final ResourceBorderTexture VANILLA_BUTTON_BACKGROUND = new ResourceBorderTexture("ldlib:textures/gui/selected.png", 16, 16, 2, 2);
+    public static final ResourceBorderTexture VANILLA_BUTTON_PRESSED = (ResourceBorderTexture) new ResourceBorderTexture("minecraft:textures/gui/widgets.png", 200, 20, 3, 3).setSliceMode(NineSliceMode.TILE).setImageWidthHeight(200/256f, 20/256f).setImageOffset(0, 46/256f);
+    public static final ResourceBorderTexture VANILLA_BUTTON_NORMAL = (ResourceBorderTexture) new ResourceBorderTexture("minecraft:textures/gui/widgets.png", 200, 20, 3, 3).setSliceMode(NineSliceMode.TILE).setImageWidthHeight(200/256f, 20/256f).setImageOffset(0, 66/256f);
+    public static final ResourceBorderTexture VANILLA_BUTTON_SELECTED = (ResourceBorderTexture) new ResourceBorderTexture("minecraft:textures/gui/widgets.png", 200, 20, 3, 3).setSliceMode(NineSliceMode.TILE).setImageWidthHeight(200/256f, 20/256f).setImageOffset(0, 86/256f);
 
     @Configurable(tips = {"ldlib.gui.editor.tips.corner_size.0", "ldlib.gui.editor.tips.corner_size.1"}, collapse = false)
     public Size borderSize;
@@ -28,7 +30,6 @@ public class ResourceBorderTexture extends ResourceTexture {
 
     @Configurable
     @Getter
-    @Setter
     public NineSliceMode mode = NineSliceMode.FIT;
 
     public ResourceBorderTexture() {
@@ -39,6 +40,13 @@ public class ResourceBorderTexture extends ResourceTexture {
         super(imageLocation);
         borderSize = new Size(cornerWidth, cornerHeight);
         imageSize = new Size(imageWidth, imageHeight);
+    }
+
+    public ResourceBorderTexture(String imageLocation, int imageWidth, int imageHeight, int cornerWidth, int cornerHeight, NineSliceMode sliceMode) {
+        super(imageLocation);
+        borderSize = new Size(cornerWidth, cornerHeight);
+        imageSize = new Size(imageWidth, imageHeight);
+        mode = sliceMode;
     }
 
     public ResourceBorderTexture setBorderSize(int width, int height) {
@@ -59,6 +67,11 @@ public class ResourceBorderTexture extends ResourceTexture {
     @Override
     public ResourceBorderTexture setColor(int color) {
         super.setColor(color);
+        return this;
+    }
+
+    public ResourceBorderTexture setSliceMode(NineSliceMode mode) {
+        this.mode = mode;
         return this;
     }
 

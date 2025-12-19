@@ -39,6 +39,9 @@ public class TexturesResource extends Resource<IGuiTexture> {
     public void buildDefault() {
         addBuiltinResource("border background", ResourceBorderTexture.BORDERED_BACKGROUND);
         addBuiltinResource("button", ResourceBorderTexture.BUTTON_COMMON);
+        addBuiltinResource("vanilla button", ResourceBorderTexture.VANILLA_BUTTON_NORMAL);
+        addBuiltinResource("vanilla button pressed", ResourceBorderTexture.VANILLA_BUTTON_PRESSED);
+        addBuiltinResource("vanilla button hover", ResourceBorderTexture.VANILLA_BUTTON_SELECTED);
         addBuiltinResource("slot", SlotWidget.ITEM_SLOT_TEXTURE.copy());
         addBuiltinResource("fluid slot", TankWidget.FLUID_SLOT_TEXTURE.copy());
         addBuiltinResource("tab", TABS_LEFT.getSubTexture(0, 0, 0.5f, 1f / 3));
