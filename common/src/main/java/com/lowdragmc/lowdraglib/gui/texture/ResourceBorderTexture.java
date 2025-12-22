@@ -8,6 +8,7 @@ import lombok.Setter;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.util.Mth;
 
 @LDLRegister(name = "border_texture", group = "texture")
 public class ResourceBorderTexture extends ResourceTexture {
@@ -28,7 +29,7 @@ public class ResourceBorderTexture extends ResourceTexture {
     @Configurable(tips = "ldlib.gui.editor.tips.image_size", collapse = false)
     public Size imageSize;
 
-    @Configurable
+    @Configurable(tips = {"ldlib.gui.editor.tips.mode.0", "ldlib.gui.editor.tips.mode.1", "ldlib.gui.editor.tips.mode.2", "ldlib.gui.editor.tips.mode.3"})
     @Getter
     public NineSliceMode mode = NineSliceMode.FIT;
 
@@ -78,19 +79,28 @@ public class ResourceBorderTexture extends ResourceTexture {
     @Environment(EnvType.CLIENT)
     @Override
     protected void drawSubAreaInternal(GuiGraphics graphics, float x, float y, float width, float height, float drawnU, float drawnV, float drawnWidth, float drawnHeight) {
-        drawBoarderInternal(graphics, x, y, width, height, drawnU, drawnV, drawnWidth, drawnHeight);
+//        drawBoarderInternal(graphics, x, y, width, height, drawnU, drawnV, drawnWidth, drawnHeight);
         float cornerWidth = borderSize.width * 1f / imageSize.width;
         float cornerHeight = borderSize.height * 1f / imageSize.height;
         switch (mode) {
-            case FIT -> super.drawSubAreaInternal(graphics, x + borderSize.width, y + borderSize.height,
+            case FIT -> {
+                drawBoarderInternal(graphics, x, y, width, height, drawnU, drawnV, drawnWidth, drawnHeight);
+                super.drawSubAreaInternal(graphics, x + borderSize.width, y + borderSize.height,
                 width - 2 * borderSize.width, height - 2 * borderSize.height,
                 cornerWidth, cornerHeight, 1 - 2 * cornerWidth, 1 - 2 * cornerHeight);
-            case STRETCH -> drawStretchInternal(graphics, x + borderSize.width, y + borderSize.height,
+            }
+            case STRETCH -> {
+                drawBoarderStretchInternal(graphics, x, y, width, height, drawnU, drawnV, drawnWidth, drawnHeight);
+                drawStretchInternal(graphics, x + borderSize.width, y + borderSize.height,
+                    width - 2 * borderSize.width, height - 2 * borderSize.height,
+                    cornerWidth, cornerHeight, 1 - 2 * cornerWidth, 1 - 2 * cornerHeight);
+            }
+            case TILE -> {
+                drawBoarderTileInternal(graphics, x, y, width, height, drawnU, drawnV, drawnWidth, drawnHeight);
+                drawTileInternal(graphics, x + borderSize.width, y + borderSize.height,
                 width - 2 * borderSize.width, height - 2 * borderSize.height,
                 cornerWidth, cornerHeight, 1 - 2 * cornerWidth, 1 - 2 * cornerHeight);
-            case TILE -> drawTileInternal(graphics, x + borderSize.width, y + borderSize.height,
-                width - 2 * borderSize.width, height - 2 * borderSize.height,
-                cornerWidth, cornerHeight, 1 - 2 * cornerWidth, 1 - 2 * cornerHeight);
+            }
         }
     }
 
@@ -116,12 +126,68 @@ public class ResourceBorderTexture extends ResourceTexture {
             1 - cornerWidth, cornerHeight, cornerWidth, 1 - 2 * cornerHeight);
     }
 
-    protected void drawStretchInternal(GuiGraphics graphics, float x, float y, float width, float height, float drawnU, float drawnV, float drawnWidth, float drawnHeight) {
+    protected void drawBoarderStretchInternal(GuiGraphics graphics, float x, float y, float width, float height, float drawnU, float drawnV, float drawnWidth, float drawnHeight) {
+        float sizeWidth = Math.min((width - borderSize.width * 2) / (imageSize.width - borderSize.width * 2), 1);
+        float sizeHeight = Math.min((height - borderSize.height * 2) / (imageSize.height - borderSize.height * 2), 1);
+
+        //compute relative sizes
         float cornerWidth = borderSize.width * 1f / imageSize.width;
         float cornerHeight = borderSize.height * 1f / imageSize.height;
+        //draw up corners
+        super.drawSubAreaInternal(graphics, x, y, borderSize.width, borderSize.height, 0, 0, cornerWidth, cornerHeight);
+        super.drawSubAreaInternal(graphics, x + width - borderSize.width, y, borderSize.width, borderSize.height, 1 - cornerWidth, 0, cornerWidth, cornerHeight);
+        //draw down corners
+        super.drawSubAreaInternal(graphics, x, y + height - borderSize.height, borderSize.width, borderSize.height, 0, 1 - cornerHeight, cornerWidth, cornerHeight);
+        super.drawSubAreaInternal(graphics, x + width - borderSize.width, y + height - borderSize.height, borderSize.width, borderSize.height, 1 - cornerWidth, 1 - cornerHeight, cornerWidth, cornerHeight);
+        //draw horizontal connections
+        super.drawSubAreaInternal(graphics, x + borderSize.width, y, width - 2 * borderSize.width, borderSize.height,
+            cornerWidth, 0, (1 - 2 * cornerWidth) * sizeWidth, cornerHeight);
+        super.drawSubAreaInternal(graphics, x + borderSize.width, y + height - borderSize.height, width - 2 * borderSize.width, borderSize.height,
+            cornerWidth, 1 - cornerHeight, (1 - 2 * cornerWidth) * sizeWidth, cornerHeight);
+        //draw vertical connections
+        super.drawSubAreaInternal(graphics, x, y + borderSize.height, borderSize.width, height - 2 * borderSize.height,
+            0, cornerHeight, cornerWidth, (1 - 2 * cornerHeight) * sizeHeight);
+        super.drawSubAreaInternal(graphics, x + width - borderSize.width, y + borderSize.height, borderSize.width, height - 2 * borderSize.height,
+            1 - cornerWidth, cornerHeight, cornerWidth, (1 - 2 * cornerHeight) * sizeHeight);
+    }
 
+    protected void drawBoarderTileInternal(GuiGraphics graphics, float x, float y, float width, float height, float drawnU, float drawnV, float drawnWidth, float drawnHeight) {
+        float sizeWidth = (width - borderSize.width * 2) / (imageSize.width - borderSize.width * 2);
+        float sizeHeight = (height - borderSize.height * 2) / (imageSize.height - borderSize.height * 2);
+
+        //compute relative sizes
+        float cornerWidth = borderSize.width * 1f / imageSize.width;
+        float cornerHeight = borderSize.height * 1f / imageSize.height;
+        //draw up corners
+        super.drawSubAreaInternal(graphics, x, y, borderSize.width, borderSize.height, 0, 0, cornerWidth, cornerHeight);
+        super.drawSubAreaInternal(graphics, x + width - borderSize.width, y, borderSize.width, borderSize.height, 1 - cornerWidth, 0, cornerWidth, cornerHeight);
+        //draw down corners
+        super.drawSubAreaInternal(graphics, x, y + height - borderSize.height, borderSize.width, borderSize.height, 0, 1 - cornerHeight, cornerWidth, cornerHeight);
+        super.drawSubAreaInternal(graphics, x + width - borderSize.width, y + height - borderSize.height, borderSize.width, borderSize.height, 1 - cornerWidth, 1 - cornerHeight, cornerWidth, cornerHeight);
+        //draw horizontal connections
+        if (sizeWidth != Float.POSITIVE_INFINITY) for(int tileX = 0; tileX < sizeWidth; tileX++) {
+            float drawWidth = (imageSize.width - borderSize.width * 2) * Math.min(sizeWidth - tileX, 1);
+            super.drawSubAreaInternal(graphics, x + borderSize.getWidth() + (imageSize.width - borderSize.width * 2) * tileX, y, drawWidth, borderSize.getHeight(), cornerWidth, 0,
+                (1 - 2 * cornerWidth) * Math.min(sizeWidth - tileX, 1), cornerHeight);
+            super.drawSubAreaInternal(graphics, x + borderSize.getWidth() + (imageSize.width - borderSize.width * 2) * tileX, y + (height - borderSize.getHeight()), drawWidth, borderSize.getHeight(), cornerWidth, 1 - cornerHeight,
+                (1 - 2 * cornerWidth) * Math.min(sizeWidth - tileX, 1), cornerHeight);
+        }
+        if (sizeHeight != Float.POSITIVE_INFINITY) for(int tileY = 0; tileY < sizeHeight; tileY++) {
+            float drawHeight = (imageSize.height - borderSize.height * 2) * Math.min(sizeHeight - tileY, 1);
+            super.drawSubAreaInternal(graphics, x, y + borderSize.getHeight() + (imageSize.height - borderSize.height * 2) * tileY, borderSize.getWidth(), drawHeight, 0, cornerHeight,
+                cornerWidth, (1 - 2 * cornerHeight) * Math.min(sizeHeight - tileY, 1));
+            super.drawSubAreaInternal(graphics, x + (width - borderSize.getWidth()), y + borderSize.getHeight() + (imageSize.height - borderSize.height * 2) * tileY, borderSize.getWidth(), drawHeight, 1 - cornerWidth, cornerHeight,
+                cornerWidth, (1 - 2 * cornerHeight) * Math.min(sizeHeight - tileY, 1));
+        }
+
+    }
+
+    protected void drawStretchInternal(GuiGraphics graphics, float x, float y, float width, float height, float drawnU, float drawnV, float drawnWidth, float drawnHeight) {
         float sizeWidth = Math.min(width / (imageSize.width - borderSize.width * 2), 1);
         float sizeHeight = Math.min(height / (imageSize.height - borderSize.height * 2), 1);
+        //compute relative sizes
+        float cornerWidth = borderSize.width * 1f / imageSize.width;
+        float cornerHeight = borderSize.height * 1f / imageSize.height;
         super.drawSubAreaInternal(graphics, x, y, width, height, cornerWidth, cornerHeight,
             (1 - 2 * cornerWidth) * sizeWidth, (1 - 2 * cornerHeight) * sizeHeight);
     }
@@ -134,8 +200,8 @@ public class ResourceBorderTexture extends ResourceTexture {
         float sizeHeight = height / (imageSize.height - borderSize.height * 2);
         int xSteps = (int) Math.ceil(sizeWidth % 1);
         int ySteps = (int) Math.ceil(sizeHeight % 1);
-        for(int tileX = 0; tileX < sizeWidth; tileX++) {
-            for(int tileY = 0; tileY < sizeHeight; tileY++) {
+        if (sizeWidth != Float.POSITIVE_INFINITY && sizeHeight != Float.POSITIVE_INFINITY) for(int tileX = 0; tileX < Mth.clamp(sizeWidth, -10000, 10000); tileX++) {
+            for(int tileY = 0; tileY < Mth.clamp(sizeHeight, -10000, 10000); tileY++) {
 //                super.drawSubAreaInternal(graphics, x + width * tileX, y + height * height,
 //                    imageSize.width - borderSize.width * 2 + 1, imageSize.height - borderSize.height * 2 + 1,
 //                    cornerWidth, cornerHeight,
