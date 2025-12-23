@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface Languages {
+    LanguageDefinition UNFORMATTED = new LanguageDefinition("Unformatted", List.of(), Set.of());
     LanguageDefinition JAVASCRIPT = new LanguageDefinition("JavaScript", List.of(
             TokenTypes.KEYWORD.createTokenType(List.of("break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete", "do", "else", "enum", "export", "extends", "false", "finally", "for", "function", "if", "import", "in", "instanceof", "let", "new", "null", "return", "super", "switch", "this", "throw", "true", "try", "typeof", "var", "void", "while", "with", "yield")),
             TokenTypes.IDENTIFIER,

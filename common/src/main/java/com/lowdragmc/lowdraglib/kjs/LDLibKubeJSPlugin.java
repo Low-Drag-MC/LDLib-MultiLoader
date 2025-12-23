@@ -5,6 +5,9 @@ import com.lowdragmc.lowdraglib.gui.editor.data.UIProject;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.*;
 import com.lowdragmc.lowdraglib.gui.widget.*;
+import com.lowdragmc.lowdraglib.gui.widget.codeeditor.CodeEditorWidget;
+import com.lowdragmc.lowdraglib.gui.widget.codeeditor.language.LanguageDefinition;
+import com.lowdragmc.lowdraglib.gui.widget.codeeditor.language.Languages;
 import com.lowdragmc.lowdraglib.kjs.ui.BlockUIJSFactory;
 import com.lowdragmc.lowdraglib.kjs.ui.ItemUIJSFactory;
 import com.lowdragmc.lowdraglib.kjs.ui.UIEvents;
@@ -92,6 +95,7 @@ public class LDLibKubeJSPlugin extends KubeJSPlugin {
         event.add("WidgetGroup", WidgetGroup.class);
         event.add("Widget", Widget.class);
         event.add("ProgressWidget", ProgressWidget.class);
+        event.add("CodeEditorWidget", CodeEditorWidget.class);
         // math
         event.add("Vector3f", Vector3f.class);
         event.add("GuiSize", Size.class);
@@ -99,6 +103,9 @@ public class LDLibKubeJSPlugin extends KubeJSPlugin {
         // storage
         event.add("ItemStackTransfer", ItemStackTransfer.class);
         event.add("FluidStorage", FluidStorage.class);
+        // CodeEditorWidget
+        event.add("EditorLanguages", Languages.class);
+        event.add("EditorLanguageDefinition", LanguageDefinition.class);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.lowdragmc.lowdraglib.gui.widget.codeeditor;
 
 import com.lowdragmc.lowdraglib.gui.widget.codeeditor.language.*;
+import dev.latvian.mods.kubejs.typings.Info;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
@@ -34,9 +35,18 @@ public class CodeEditor {
         reparseAndStyle();
     }
 
+    @Info("Sets the formatter to use the provided languageDef.\nUse with any of `EditorLanguages.`, or with `new EditorLanguageDefinition(...)`.")
     public void setLanguageDefinition(ILanguageDefinition languageDefinition) {
         if (languageDefinition != syntaxParser.getLanguageDefinition()) {
             syntaxParser.setLanguageDefinition(languageDefinition);
+            reparseAndStyle();
+        }
+    }
+
+    @Info("Sets the formatter to unformatted text")
+    public void setLanguageDefinitionUnformatted() {
+        if (Languages.UNFORMATTED != syntaxParser.getLanguageDefinition()) {
+            syntaxParser.setLanguageDefinition(Languages.UNFORMATTED);
             reparseAndStyle();
         }
     }
