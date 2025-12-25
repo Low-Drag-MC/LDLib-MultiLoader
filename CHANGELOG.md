@@ -16,3 +16,4 @@
   * Known issue: when dragging a slider, if the cursor passes a slider widget lower on the update order, the dragging will be stolen.
 
 * Fixed bug where drag splitting an itemStack would not render correctly.
+* Fixed missing lang for some widget

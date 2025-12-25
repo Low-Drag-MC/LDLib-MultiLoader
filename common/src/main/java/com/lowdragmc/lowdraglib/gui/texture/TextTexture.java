@@ -258,7 +258,7 @@ public class TextTexture extends TransformTexture {
         } else if (type == TextType.POP_OUT) {
             if (Widget.isMouseOver((int) x, (int) y, width, height, mouseX, mouseY)) {
                 drawBackgroundInternal(graphics, mouseX, mouseY, (int) x + width / 2f - fontRenderer.width(text) / 2f - inflateBackgroundX, (int) y + height / 2f - fontRenderer.lineHeight / 2f - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2);
-                graphics.drawString(fontRenderer, text, (int) x + width / 2 - fontRenderer.width(text) / 2, (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color);
+                graphics.drawString(fontRenderer, text, (int) x + width / 2 - fontRenderer.width(text) / 2, (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color, dropShadow);
             }
             else {
                 String line = texts.get(0) + (texts.size() > 1 ? ".." : "");
@@ -267,7 +267,7 @@ public class TextTexture extends TransformTexture {
         } else if (type == TextType.POP_OUT_BG) {
             if (Widget.isMouseOver((int) x, (int) y, width, height, mouseX, mouseY)) {
                 drawBackgroundInternal(graphics, mouseX, mouseY, (int) x + width / 2f - fontRenderer.width(text) / 2f - inflateBackgroundX, (int) y + height / 2f - fontRenderer.lineHeight / 2f - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2);
-                graphics.drawString(fontRenderer, text, (int) x + width / 2 - fontRenderer.width(text) / 2, (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color);
+                graphics.drawString(fontRenderer, text, (int) x + width / 2 - fontRenderer.width(text) / 2, (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color, dropShadow);
             }
             else {
                 String line = texts.get(0) + (texts.size() > 1 ? ".." : "");
@@ -277,7 +277,7 @@ public class TextTexture extends TransformTexture {
         } else if (type == TextType.RIGHT_POP_OUT) {
             if (Widget.isMouseOver((int) x, (int) y, width, height, mouseX, mouseY)) {
                 drawBackgroundInternal(graphics, mouseX, mouseY, (int) x + width - fontRenderer.width(text) - inflateBackgroundX, (int) y + height / 2f - fontRenderer.lineHeight / 2f - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2);
-                graphics.drawString(fontRenderer, text, (int) x + width - fontRenderer.width(text), (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color);
+                graphics.drawString(fontRenderer, text, (int) x + width - fontRenderer.width(text), (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color, dropShadow);
             }
             else {
                 String line = texts.get(0) + (texts.size() > 1 ? ".." : "");
@@ -287,7 +287,7 @@ public class TextTexture extends TransformTexture {
         } else if (type == TextType.RIGHT_POP_OUT_BG) {
             if (Widget.isMouseOver((int) x, (int) y, width, height, mouseX, mouseY)) {
                 drawBackgroundInternal(graphics, mouseX, mouseY, (int) x + width - fontRenderer.width(text) - inflateBackgroundX, (int) y + height / 2f - fontRenderer.lineHeight / 2f - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2);
-                graphics.drawString(fontRenderer, text, (int) x + width - fontRenderer.width(text), (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color);
+                graphics.drawString(fontRenderer, text, (int) x + width - fontRenderer.width(text), (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color, dropShadow);
             }
             else {
                 String line = texts.get(0) + (texts.size() > 1 ? ".." : "");
@@ -298,7 +298,7 @@ public class TextTexture extends TransformTexture {
         } else if (type == TextType.LEFT_POP_OUT) {
             if (Widget.isMouseOver((int) x, (int) y, width, height, mouseX, mouseY)) {
                 drawBackgroundInternal(graphics, mouseX, mouseY, (int) x - inflateBackgroundX, (int) y + height / 2f - fontRenderer.lineHeight / 2f - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2);
-                graphics.drawString(fontRenderer, text, (int) x, (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color);
+                graphics.drawString(fontRenderer, text, (int) x, (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color, dropShadow);
             }
             else {
                 String line = texts.get(0) + (texts.size() > 1 ? ".." : "");
@@ -308,7 +308,7 @@ public class TextTexture extends TransformTexture {
         } else if (type == TextType.LEFT_POP_OUT_BG) {
             if (Widget.isMouseOver((int) x, (int) y, width, height, mouseX, mouseY)) {
                 drawBackgroundInternal(graphics, mouseX, mouseY, (int) x - inflateBackgroundX, (int) y + height / 2f - fontRenderer.lineHeight / 2f - inflateBackgroundY - 1, fontRenderer.width(text) + inflateBackgroundX * 2, fontRenderer.lineHeight + inflateBackgroundY * 2);
-                graphics.drawString(fontRenderer, text, (int) x, (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color);
+                graphics.drawString(fontRenderer, text, (int) x, (int) y + height / 2 - fontRenderer.lineHeight / 2 - 1, color, dropShadow);
             }
             else {
                 String line = texts.get(0) + (texts.size() > 1 ? ".." : "");

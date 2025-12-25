@@ -8,6 +8,7 @@ import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ResourceBorderTexture;
 import com.lowdragmc.lowdraglib.utils.Position;
 import com.lowdragmc.lowdraglib.utils.Size;
+import dev.latvian.mods.kubejs.typings.Info;
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +16,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
-@Getter
 @LDLRegister(name = "slider", group = "widget.basic")
 @RemapPrefixForJS("kjs$")
 public class SliderWidget extends Widget implements IConfigurableWidget {
@@ -25,6 +25,9 @@ public class SliderWidget extends Widget implements IConfigurableWidget {
     public final IGuiTexture defaultSliderHandelHover = new ResourceBorderTexture("minecraft:textures/gui/slider.png", 200, 20, 3, 3, ResourceBorderTexture.NineSliceMode.TILE).setImageWidthHeight(200/256f, 20/256f).setImageOffsetY(60/256f);
 
     @Setter
+    @Getter
+    @Configurable(tips = {"ldlib.gui.editor.tips.slider_keys.0", "ldlib.gui.editor.tips.slider_keys.1", "ldlib.gui.editor.tips.slider_keys.2", "ldlib.gui.editor.tips.slider_keys.3", "ldlib.gui.editor.tips.slider_keys.4", "ldlib.gui.editor.tips.slider_keys.5"})
+    @NumberRange(range = {0, Integer.MAX_VALUE})
     public int leftUpKey = 263, rightDownKey = 262;
 
     @Configurable
@@ -32,27 +35,34 @@ public class SliderWidget extends Widget implements IConfigurableWidget {
 
     @Configurable
     @Setter
+    @Getter
     public IGuiTexture handleTexture;
 
     @Configurable
     @Setter
+    @Getter
     public IGuiTexture handleHoverTexture;
 
     @Configurable
     @Setter
+    @Getter
     @NumberRange(range = {0, Integer.MAX_VALUE})
     public int handleSize = 8;
 
-    @Configurable
+    @Configurable(tips = "ldlib.gui.editor.tips.min_max_amount")
     @Setter
+    @Getter
+    @NumberRange(range = {Integer.MIN_VALUE, Integer.MAX_VALUE})
     public float minAmount = 0;
 
-    @Configurable
+    @Configurable(tips = "ldlib.gui.editor.tips.min_max_amount")
     @Setter
+    @Getter
+    @NumberRange(range = {Integer.MIN_VALUE, Integer.MAX_VALUE})
     public float maxAmount = 10;
 
-    @Configurable
-    @Setter
+    @Configurable(tips = "ldlib.gui.editor.tips.slider_steps")
+    @Getter
     @NumberRange(range = {0, 1}, wheel = 0.01)
     public float sliderValue = 0.5f;
 
@@ -62,6 +72,7 @@ public class SliderWidget extends Widget implements IConfigurableWidget {
     public int valueStep;
 
     private boolean isDragging = false;
+    private boolean isSelected = false;
 
     public SliderWidget setDefaultKeysHorizontal() {
         rightDownKey  = 262;
@@ -114,6 +125,12 @@ public class SliderWidget extends Widget implements IConfigurableWidget {
     }
 
     @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        isSelected = isMouseOverElement(mouseX, mouseY);
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if(button == 0) isDragging = false;
         return super.mouseReleased(mouseX, mouseY, button);
@@ -121,31 +138,48 @@ public class SliderWidget extends Widget implements IConfigurableWidget {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == leftUpKey) {
-            sliderValue -= Mth.clamp(1/calculateStepSize(), 0, 1);
-            return true;
-        }
-        if (keyCode == rightDownKey) {
-            sliderValue += Mth.clamp(1f/calculateStepSize(), 0, 1);
-            return true;
+        if (isSelected) {
+            if(keyCode == leftUpKey) {
+                sliderValue = Mth.clamp(sliderValue - 1 / calculateStepSize(), 0, 1);
+                return true;
+            }
+            if(keyCode == rightDownKey) {
+                sliderValue = Mth.clamp(sliderValue + 1f / calculateStepSize(), 0, 1);
+                return true;
+            }
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     private void drawHandle(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
         var isHovered = isMouseOverElement(mouseX, mouseY) || isDragging;
-        if (handleTexture != null && (!isHovered || drawBackgroundWhenHover)) {
-            if (direction == SliderDirection.HORIZONTAL) handleTexture.draw(graphics, mouseX, mouseY, getPositionX() + (getSizeWidth() - handleSize) * sliderValue, getPositionY(), handleSize, getSizeHeight());
-            else handleTexture.draw(graphics, mouseX, mouseY, getPositionX(), getPositionY() + (getSizeHeight() - handleSize) * sliderValue, getSizeWidth(), handleSize);
-        }
-        if (handleHoverTexture != null && isHovered && isActive()) {
+        if (handleHoverTexture != null && (isHovered || isSelected) && isActive()) {
             if (direction == SliderDirection.HORIZONTAL) handleHoverTexture.draw(graphics, mouseX, mouseY, getPositionX() + (getSizeWidth() - handleSize) * sliderValue, getPositionY(), handleSize, getSizeHeight());
             else handleHoverTexture.draw(graphics, mouseX, mouseY, getPositionX(), getPositionY() + (getSizeHeight() - handleSize) * sliderValue, getSizeWidth(), handleSize);
+        }
+        if (handleTexture != null && !((isHovered || isSelected) || !drawBackgroundWhenHover)) {
+            if (direction == SliderDirection.HORIZONTAL) handleTexture.draw(graphics, mouseX, mouseY, getPositionX() + (getSizeWidth() - handleSize) * sliderValue, getPositionY(), handleSize, getSizeHeight());
+            else handleTexture.draw(graphics, mouseX, mouseY, getPositionX(), getPositionY() + (getSizeHeight() - handleSize) * sliderValue, getSizeWidth(), handleSize);
         }
     }
 
     public float calculateStepSize() {
         return valueStep != 0 ? valueStep : direction == SliderDirection.HORIZONTAL ? getSizeWidth() : getSizeHeight();
+    }
+
+    @Info("Gets the amount based on min and max values.")
+    public float getAmount() {
+        return Mth.lerp(sliderValue, minAmount, maxAmount);
+    }
+
+    @Info("Sets the amount based on min and max values.")
+    public void setAmount(float amount) {
+        sliderValue = 0;
+    }
+
+    @Info("Sets the value (from 0 to 1)")
+    public void setValue(float value) {
+        sliderValue = value;
     }
 
     public enum SliderDirection {

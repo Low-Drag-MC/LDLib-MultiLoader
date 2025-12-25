@@ -187,6 +187,14 @@
   "ldlib.gui.editor.tips.cell_animation": "Tick time between cells",
   "ldlib.gui.editor.tips.texture_type": "Switching the texture type will not modify references of the previous one.",
   "ldlib.gui.editor.tips.progress_texture": "Can only accept a Progress Texture",
+  "ldlib.gui.editor.tips.slider_keys.0": "Keys to be pressed to move slider left and right or up and down, 32-bit encoding",
+  "ldlib.gui.editor.tips.slider_keys.1": "65-90 = a-z",
+  "ldlib.gui.editor.tips.slider_keys.2": "262 = arrow key right",
+  "ldlib.gui.editor.tips.slider_keys.3": "263 = arrow key left",
+  "ldlib.gui.editor.tips.slider_keys.4": "264 = arrow key down",
+  "ldlib.gui.editor.tips.slider_keys.5": "265 = arrow key up",
+  "ldlib.gui.editor.tips.min_max_amount": "When using the .getAmount() method, will return a value between min and max amounts that represents the slider's value.",
+  "ldlib.gui.editor.tips.slider_steps": "How many steps the slider has, 0 is smooth / 1 step per pixel length",
 
   "ldlib.gui.editor.register.texture.resource_texture": "Resource Texture",
   "ldlib.gui.editor.register.texture.item_texture": "Item Texture",
@@ -210,6 +218,7 @@
   "ldlib.gui.editor.register.widget.basic.progress": "Progress",
   "ldlib.gui.editor.register.widget.basic.text_texture": "Text Texture",
   "ldlib.gui.editor.register.widget.basic.color": "Color",
+  "ldlib.gui.editor.register.widget.basic.slider": "Slider",
   "ldlib.gui.editor.register.widget.group.group": "Group",
   "ldlib.gui.editor.register.widget.group.draggable_scrollable_group": "Scrollable Group",
   "ldlib.gui.editor.register.widget.group.draggable_widget_group": "Scrollable Wrapper",
@@ -220,6 +229,12 @@
   "ldlib.gui.editor.register.widget.container.phantom_fluid_slot": "Phantom Fluid Slot",
   "ldlib.gui.editor.register.widget.container.phantom_tank_slot": "Phantom Tank Slot",
   "ldlib.gui.editor.register.widget.custom.player_inventory": "Player Inventory",
+
+  "ldlib.gui.editor.register.widget.label": "Label Options",
+  "ldlib.gui.editor.register.widget.text_field": "Text Field Options",
+  "ldlib.gui.editor.register.widget.image": "Image Options",
+  "ldlib.gui.editor.register.widget.switch": "Switch Options",
+  "ldlib.gui.editor.register.widget.text_box": "Text Box Options",
 
   "ldlib.gui.editor.register.editor.history": "History View",
 
