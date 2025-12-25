@@ -174,7 +174,7 @@ public class SliderWidget extends Widget implements IConfigurableWidget {
 
     @Info("Sets the amount based on min and max values.")
     public void setAmount(float amount) {
-        sliderValue = 0;
+        sliderValue = (amount - minAmount) / (maxAmount - minAmount);
     }
 
     @Info("Sets the value (from 0 to 1)")
