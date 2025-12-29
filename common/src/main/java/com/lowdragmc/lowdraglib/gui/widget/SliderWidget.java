@@ -6,15 +6,22 @@ import com.lowdragmc.lowdraglib.gui.editor.annotation.NumberRange;
 import com.lowdragmc.lowdraglib.gui.editor.configurator.IConfigurableWidget;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ResourceBorderTexture;
+import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
 import com.lowdragmc.lowdraglib.utils.Position;
 import com.lowdragmc.lowdraglib.utils.Size;
 import dev.latvian.mods.kubejs.typings.Info;
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
 import lombok.Getter;
 import lombok.Setter;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
+
+import java.awt.*;
+import java.util.function.Consumer;
 
 @LDLRegister(name = "slider", group = "widget.basic")
 @RemapPrefixForJS("kjs$")
@@ -61,18 +68,22 @@ public class SliderWidget extends Widget implements IConfigurableWidget {
     @NumberRange(range = {Float.MIN_VALUE, Float.MAX_VALUE})
     public float maxAmount = 10;
 
-    @Configurable(tips = "ldlib.gui.editor.tips.slider_steps")
+    @Configurable
     @Getter
     @NumberRange(range = {0, 1}, wheel = 0.01)
-    public float sliderValue = 0.5f;
+    private float sliderValue = 0.5f;
 
-    @Configurable
+    @Configurable(tips = "ldlib.gui.editor.tips.slider_steps")
     @Setter
     @NumberRange(range = {0, Integer.MAX_VALUE})
     public int valueStep;
 
     private boolean isDragging = false;
     private boolean isSelected = false;
+
+    @Setter
+    private Consumer<Float> sliderCallback = null;
+    protected float oldValue;
 
     public SliderWidget setDefaultKeysHorizontal() {
         rightDownKey  = 262;
@@ -95,6 +106,10 @@ public class SliderWidget extends Widget implements IConfigurableWidget {
         super(0,0,80,20);
     }
 
+    public SliderWidget(int x, int y, int width, int height) {
+        super(x, y, width, height);
+    }
+
     public SliderWidget(Position selfPosition, Size size) {
         super(selfPosition, size);
     }
@@ -105,6 +120,7 @@ public class SliderWidget extends Widget implements IConfigurableWidget {
         backgroundTexture = defaultSliderBackground;
         handleTexture = defaultSliderHandel;
         handleHoverTexture = defaultSliderHandelHover;
+        overlay = new TextTexture("50%%", Color.LIGHT_GRAY.getRGB()).setDropShadow(true);
     }
 
 
@@ -116,36 +132,50 @@ public class SliderWidget extends Widget implements IConfigurableWidget {
     }
 
     @Override
+    public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+        drawOverlay(graphics, mouseX, mouseY, partialTicks);
+    }
+
+    @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if(button != 0) return false;
-        if(!isDragging && !isMouseOverElement(mouseX, mouseY)) return false;
+        if (button != 0) return false;
+        if (!isDragging && !isMouseOverElement(mouseX, mouseY)) return false;
         isDragging = true;
         if (direction == SliderDirection.HORIZONTAL) sliderValue = Math.round(Mth.clamp((mouseX - getPositionX() - handleSize / 2f) / (getSizeWidth() - handleSize), 0, 1) * calculateStepSize()) / calculateStepSize();
         else sliderValue = Math.round(Mth.clamp((mouseY - getPositionY() - handleSize / 2f) / (getSizeHeight() - handleSize), 0, 1) * calculateStepSize()) / calculateStepSize();
 
+        if (oldValue != sliderValue) {
+            writeClientAction(1, buffer -> {
+                buffer.writeFloat(sliderValue);
+            });
+            if (sliderCallback != null) sliderCallback.accept(sliderValue);
+        }
+        oldValue = sliderValue;
         return true;
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         isSelected = isMouseOverElement(mouseX, mouseY);
+        mouseDragged(mouseX, mouseY, button, 0, 0);
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if(button == 0) isDragging = false;
+        if (button == 0) isDragging = false;
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (isSelected) {
-            if(keyCode == leftUpKey) {
+            if (keyCode == leftUpKey) {
                 sliderValue = Mth.clamp(sliderValue - 1 / calculateStepSize(), 0, 1);
                 return true;
             }
-            if(keyCode == rightDownKey) {
+            if (keyCode == rightDownKey) {
                 sliderValue = Mth.clamp(sliderValue + 1f / calculateStepSize(), 0, 1);
                 return true;
             }
@@ -183,6 +213,47 @@ public class SliderWidget extends Widget implements IConfigurableWidget {
     @Info("Sets the value (from 0 to 1)")
     public void setValue(float value) {
         sliderValue = value;
+
+        if (isRemote()) {
+            writeClientAction(2, buffer -> buffer.writeFloat(sliderValue));
+        } else {
+            writeUpdateInfo(2, buffer -> buffer.writeFloat(sliderValue));
+        }
+    }
+
+
+    @Override
+    public void writeInitialData(FriendlyByteBuf buffer) {
+        buffer.writeFloat(sliderValue);
+    }
+
+    @Override
+    public void readInitialData(FriendlyByteBuf buffer) {
+        setValue(buffer.readFloat());
+    }
+
+    @Override
+    public void detectAndSendChanges() {
+        writeUpdateInfo(1, buffer -> buffer.writeFloat(sliderValue));
+    }
+
+    @Override
+    public void handleClientAction(int id, FriendlyByteBuf buffer) {
+        super.handleClientAction(id, buffer);
+        if (id == 1) {
+            sliderValue = buffer.readFloat();
+            if (sliderCallback != null) {
+                sliderCallback.accept(sliderValue = buffer.readFloat());
+            }
+        }
+    }
+
+    @Override
+    @Environment(EnvType.CLIENT)
+    public void readUpdateInfo(int id, FriendlyByteBuf buffer) {
+        if (id == 1) {
+            sliderValue = buffer.readFloat();
+        }
     }
 
     public enum SliderDirection {
