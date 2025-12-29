@@ -52,13 +52,13 @@ public class SliderWidget extends Widget implements IConfigurableWidget {
     @Configurable(tips = "ldlib.gui.editor.tips.min_max_amount")
     @Setter
     @Getter
-    @NumberRange(range = {Integer.MIN_VALUE, Integer.MAX_VALUE})
+    @NumberRange(range = {Float.MIN_VALUE, Float.MAX_VALUE})
     public float minAmount = 0;
 
     @Configurable(tips = "ldlib.gui.editor.tips.min_max_amount")
     @Setter
     @Getter
-    @NumberRange(range = {Integer.MIN_VALUE, Integer.MAX_VALUE})
+    @NumberRange(range = {Float.MIN_VALUE, Float.MAX_VALUE})
     public float maxAmount = 10;
 
     @Configurable(tips = "ldlib.gui.editor.tips.slider_steps")
@@ -107,6 +107,8 @@ public class SliderWidget extends Widget implements IConfigurableWidget {
         handleHoverTexture = defaultSliderHandelHover;
     }
 
+
+    @Environment(EnvType.CLIENT)
     @Override
     protected void drawBackgroundTexture(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
         super.drawBackgroundTexture(graphics, mouseX, mouseY);
@@ -151,6 +153,7 @@ public class SliderWidget extends Widget implements IConfigurableWidget {
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
+    @Environment(EnvType.CLIENT)
     private void drawHandle(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
         var isHovered = isMouseOverElement(mouseX, mouseY) || isDragging;
         if (handleHoverTexture != null && (isHovered || isSelected) && isActive()) {

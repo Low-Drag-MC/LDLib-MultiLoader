@@ -104,6 +104,7 @@ public class ResourceBorderTexture extends ResourceTexture {
         }
     }
 
+    @Environment(EnvType.CLIENT)
     protected void drawBoarderInternal(GuiGraphics graphics, float x, float y, float width, float height, float drawnU, float drawnV, float drawnWidth, float drawnHeight) {
         //compute relative sizes
         float cornerWidth = borderSize.width * 1f / imageSize.width;
@@ -126,6 +127,7 @@ public class ResourceBorderTexture extends ResourceTexture {
             1 - cornerWidth, cornerHeight, cornerWidth, 1 - 2 * cornerHeight);
     }
 
+    @Environment(EnvType.CLIENT)
     protected void drawBoarderStretchInternal(GuiGraphics graphics, float x, float y, float width, float height, float drawnU, float drawnV, float drawnWidth, float drawnHeight) {
         float sizeWidth = Math.min((width - borderSize.width * 2) / (imageSize.width - borderSize.width * 2), 1);
         float sizeHeight = Math.min((height - borderSize.height * 2) / (imageSize.height - borderSize.height * 2), 1);
@@ -151,6 +153,7 @@ public class ResourceBorderTexture extends ResourceTexture {
             1 - cornerWidth, cornerHeight, cornerWidth, (1 - 2 * cornerHeight) * sizeHeight);
     }
 
+    @Environment(EnvType.CLIENT)
     protected void drawBoarderTileInternal(GuiGraphics graphics, float x, float y, float width, float height, float drawnU, float drawnV, float drawnWidth, float drawnHeight) {
         float sizeWidth = (width - borderSize.width * 2) / (imageSize.width - borderSize.width * 2);
         float sizeHeight = (height - borderSize.height * 2) / (imageSize.height - borderSize.height * 2);
@@ -182,6 +185,7 @@ public class ResourceBorderTexture extends ResourceTexture {
 
     }
 
+    @Environment(EnvType.CLIENT)
     protected void drawStretchInternal(GuiGraphics graphics, float x, float y, float width, float height, float drawnU, float drawnV, float drawnWidth, float drawnHeight) {
         float sizeWidth = Math.min(width / (imageSize.width - borderSize.width * 2), 1);
         float sizeHeight = Math.min(height / (imageSize.height - borderSize.height * 2), 1);
@@ -192,6 +196,7 @@ public class ResourceBorderTexture extends ResourceTexture {
             (1 - 2 * cornerWidth) * sizeWidth, (1 - 2 * cornerHeight) * sizeHeight);
     }
 
+    @Environment(EnvType.CLIENT)
     protected void drawTileInternal(GuiGraphics graphics, float x, float y, float width, float height, float drawnU, float drawnV, float drawnWidth, float drawnHeight) {
         float cornerWidth = borderSize.width * 1f / imageSize.width;
         float cornerHeight = borderSize.height * 1f / imageSize.height;
