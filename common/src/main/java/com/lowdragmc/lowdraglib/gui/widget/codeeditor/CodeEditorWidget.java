@@ -188,7 +188,7 @@ public class CodeEditorWidget extends WidgetGroup {
                     case GLFW.GLFW_KEY_BACKSPACE -> codeEditor.backspace();
                     case GLFW.GLFW_KEY_DELETE -> codeEditor.deleteForwardText();
                     case GLFW.GLFW_KEY_RIGHT -> {
-                        codeEditor.moveCursorRight();
+                        codeEditor.moveCursorRight(isCtrlDown());
                         if (isShiftDown()) {
                             codeEditor.updateSelection();
                         } else {
@@ -196,7 +196,7 @@ public class CodeEditorWidget extends WidgetGroup {
                         }
                     }
                     case GLFW.GLFW_KEY_LEFT -> {
-                        codeEditor.moveCursorLeft();
+                        codeEditor.moveCursorLeft(isCtrlDown());
                         if (isShiftDown()) {
                             codeEditor.updateSelection();
                         } else {

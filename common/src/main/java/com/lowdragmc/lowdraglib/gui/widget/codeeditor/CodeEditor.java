@@ -25,6 +25,35 @@ public class CodeEditor {
     // runtime
     private List<StyledLine> visibleLinesCache;
 
+    static final List<Character> stopQuickMoveChars = List.of(
+        ' ',
+        '\n',
+        '.',
+        '/',
+        '\\',
+        '(',
+        ')',
+        '{',
+        '}',
+        '[',
+        ']',
+        '-',
+        '+',
+        '\"',
+        '\'',
+        '?',
+        ':',
+        ';',
+        '!',
+        '@',
+        '#',
+        '$',
+        '%',
+        '^',
+        '&',
+        '*'
+    );
+
     public CodeEditor() {
         document = new Document();
         syntaxParser = new SyntaxParser();
@@ -270,6 +299,34 @@ public class CodeEditor {
         }
     }
 
+    public void moveCursorLeft(boolean ctrl) {
+        if(cursor.column() == 0) {
+            moveCursorLeft();
+            return;
+        }
+        if(document.getLine(cursor.line()).length() <= cursor.column() - 1) moveCursorLeft();
+        boolean startOnSpace = document.getLine(cursor.line()).charAt(cursor.column() - 1) == ' ';
+
+        boolean firstMove = true;
+        if(ctrl) while(true) {
+            if(cursor.column() == 0) break;
+            char c = document.getLine(cursor.line()).charAt(cursor.column() - 1);
+            if(startOnSpace) {
+                if(c != ' ' && c != '\n') break;
+                moveCursorLeft();
+            }
+            else {
+                if(stopQuickMoveChars.contains(c)) {
+                    if(firstMove) moveCursorLeft();
+                    break;
+                }
+                moveCursorLeft();
+            }
+            firstMove = false;
+        }
+        else moveCursorLeft();
+    }
+
     public void moveCursorRight() {
         if (cursor.column() < document.getLine(cursor.line()).length()) {
             setCursorColumn(cursor.column() + 1);
@@ -277,6 +334,33 @@ public class CodeEditor {
             setCursorLine(cursor.line() + 1);
             setCursorColumn(0);
         }
+    }
+
+    public void moveCursorRight(boolean ctrl) {
+        if(document.getLine(cursor.line()).length() <= cursor.column()) {
+            moveCursorRight();
+            return;
+        }
+        boolean startOnSpace = document.getLine(cursor.line()).charAt(cursor.column()) == ' ';
+
+        boolean firstMove = true;
+        if(ctrl) while(true) {
+            if(document.getLine(cursor.line()).length() <= cursor.column()) break;
+            char c = document.getLine(cursor.line()).charAt(cursor.column());
+            if(startOnSpace) {
+                if(c != ' ' && c != '\n') break;
+                moveCursorRight();
+            }
+            else {
+                if(stopQuickMoveChars.contains(c)) {
+                    if(firstMove) moveCursorRight();
+                    break;
+                }
+                moveCursorRight();
+            }
+            firstMove = false;
+        }
+        else moveCursorRight();
     }
 
     public void moveCursorStart() {
