@@ -408,7 +408,8 @@ public class CodeEditorWidget extends WidgetGroup {
                     var start = line == range[0] ? font.width(Component.literal(codeEditor.getDocument().getLine(line).substring(0, range[1]))
                             .withStyle(Style.EMPTY.withFont(MONO_BOLD))) - 1 : 0;
                     var end = line == range[2] ? font.width(Component.literal(codeEditor.getDocument().getLine(line).substring(0, range[3]))
-                            .withStyle(Style.EMPTY.withFont(MONO_BOLD))) - 1 : getSizeWidth();
+                            .withStyle(Style.EMPTY.withFont(MONO_BOLD))) - 1 : font.width(Component.literal(codeEditor.getDocument().getLine(line))
+                        .withStyle(Style.EMPTY.withFont(MONO_BOLD))) - 1;
                     graphics.fill(pos.x + start + xOffset,
                             pos.y + i * lineHeight + yOffset - 2,
                             pos.x + end + xOffset,
