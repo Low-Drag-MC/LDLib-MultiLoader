@@ -167,6 +167,7 @@ public class CodeEditorWidget extends WidgetGroup {
     @Environment(EnvType.CLIENT)
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (canConsumeInput()) {
+            boolean needAlignCursor = true;
             var previous = getLines();
             if (Screen.isSelectAll(keyCode)) {
                 this.codeEditor.selectAll();
@@ -179,7 +180,10 @@ public class CodeEditorWidget extends WidgetGroup {
                 this.codeEditor.deleteSelection();
             } else {
                 switch (keyCode) {
-                    case GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_RIGHT_SHIFT -> codeEditor.startSelection();
+                    case GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_RIGHT_SHIFT -> {
+                        needAlignCursor = false;
+                        codeEditor.startSelection();
+                    }
                     case GLFW.GLFW_KEY_ENTER -> codeEditor.enter();
                     case GLFW.GLFW_KEY_BACKSPACE -> codeEditor.backspace();
                     case GLFW.GLFW_KEY_DELETE -> codeEditor.deleteForwardText();
@@ -218,9 +222,10 @@ public class CodeEditorWidget extends WidgetGroup {
                     case GLFW.GLFW_KEY_TAB -> codeEditor.insertText(codeEditor.getIndentString());
                     case GLFW.GLFW_KEY_HOME -> codeEditor.moveCursorStart();
                     case GLFW.GLFW_KEY_END -> codeEditor.moveCursorEnd();
+                    default -> needAlignCursor = false;
                 };
             }
-            adaptCursor();
+            if (needAlignCursor) adaptCursor();
             if (!previous.equals(getLines())) {
                 notifyChanged();
             }
@@ -312,13 +317,20 @@ public class CodeEditorWidget extends WidgetGroup {
             var hasXBar = fullWidth > size.width;
             var availableHeight = size.height - (hasXBar ? 4 : 0);
             var hasYBar = fullHeight > availableHeight;
+            var availableWidth = size.width - (hasYBar ? 4 : 0);
 
-            if (hasYBar) {
-                int moveDelta = (int) (-Mth.clamp(wheelDelta, -1, 1) * 13);
-                scrollYOffset += moveDelta;
-                scrollYOffset = Mth.clamp(scrollYOffset, 0, fullHeight - availableHeight);
+            if (isShiftDown()) {
+                if (hasXBar) {
+                    int moveDelta = (int) (-Mth.clamp(wheelDelta, -1, 1) * 13);
+                    scrollXOffset += moveDelta;
+                    scrollXOffset = Mth.clamp(scrollXOffset, 0, fullWidth - availableWidth);
+                }
             } else {
-                scrollYOffset = 0;
+                if (hasYBar) {
+                    int moveDelta = (int) (-Mth.clamp(wheelDelta, -1, 1) * 13);
+                    scrollYOffset += moveDelta;
+                    scrollYOffset = Mth.clamp(scrollYOffset, 0, fullHeight - availableHeight);
+                }
             }
             return true;
         }
