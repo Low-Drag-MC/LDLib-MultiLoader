@@ -56,6 +56,7 @@
   "ldlib.gui.editor.name.draggable": "draggable",
   "ldlib.gui.editor.name.scrollable": "scrollable",
   "ldlib.gui.editor.name.scroll_wheel_direction": "scroll wheel direction",
+  "ldlib.gui.editor.name.shift_toggle_direction": "shift toggle direction",
   "ldlib.gui.editor.name.use_scissor": "use scissor",
   "ldlib.gui.editor.name.x_bar_background": "x bar background",
   "ldlib.gui.editor.name.y_bar_background": "y bar background",
@@ -106,6 +107,7 @@
   "ldlib.gui.editor.tips.isDynamicSized": "size will be adjusted according to content",
   "ldlib.gui.editor.name.allowXEIIngredientOverMouse": "support xei ingredient lookup",
   "ldlib.gui.editor.tips.allowXEIIngredientOverMouse": "if ture, the widget will be able to jump to the xei viewer",
+  "ldlib.gui.editor.tips.shift_toggle_direction": "does pressing shift switch the direction scrolling moves",
   "ldlib.gui.editor.name.items": "items",
 
 

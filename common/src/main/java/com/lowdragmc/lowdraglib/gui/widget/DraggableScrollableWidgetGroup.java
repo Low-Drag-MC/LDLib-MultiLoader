@@ -55,6 +55,9 @@ public class DraggableScrollableWidgetGroup extends WidgetGroup {
     @Configurable(name = "ldlib.gui.editor.name.scroll_wheel_direction")
     protected ScrollWheelDirection scrollWheelDirection = ScrollWheelDirection.VERTICAL;
     @Getter @Setter
+    @Configurable(name = "ldlib.gui.editor.name.shift_toggle_direction", tips = "ldlib.gui.editor.tips.shift_toggle_direction")
+    protected boolean shiftToggleDirection = false;
+    @Getter @Setter
     @Configurable(name = "ldlib.gui.editor.name.use_scissor")
     protected boolean useScissor;
     protected int maxHeight;
@@ -466,7 +469,7 @@ public class DraggableScrollableWidgetGroup extends WidgetGroup {
                 setFocus(true);
                 if (isFocus()) {
                     int moveDelta = (int) (-Mth.clamp(wheelDelta, -1, 1) * 13);
-                    if (scrollWheelDirection == ScrollWheelDirection.VERTICAL) {
+                    if ((scrollWheelDirection == ScrollWheelDirection.VERTICAL) == !(isShiftDown() && shiftToggleDirection)) {
                         if (getMaxHeight() - getSize().height > 0 || scrollYOffset > getMaxHeight() - getSize().height) {
                             setScrollYOffset(Mth.clamp(scrollYOffset + moveDelta, 0, getMaxHeight() - getSize().height));
                         }
