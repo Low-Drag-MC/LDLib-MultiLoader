@@ -1,9 +1,6 @@
 package com.lowdragmc.lowdraglib.gui.widget;
 
-import com.lowdragmc.lowdraglib.gui.editor.annotation.ConfigSetter;
-import com.lowdragmc.lowdraglib.gui.editor.annotation.Configurable;
-import com.lowdragmc.lowdraglib.gui.editor.annotation.NumberColor;
-import com.lowdragmc.lowdraglib.gui.editor.annotation.LDLRegister;
+import com.lowdragmc.lowdraglib.gui.editor.annotation.*;
 import com.lowdragmc.lowdraglib.gui.editor.configurator.IConfigurableWidget;
 import com.lowdragmc.lowdraglib.utils.LocalizationUtils;
 import com.lowdragmc.lowdraglib.utils.Position;
@@ -29,9 +26,11 @@ public class TextBoxWidget extends Widget implements IConfigurableWidget {
     public final List<String> content = new ArrayList<>();
 
     @Configurable(name = "ldlib.gui.editor.name.space")
+    @NumberRange(range = {0, Integer.MAX_VALUE})
     public int space = 1;
 
     @Configurable(name = "ldlib.gui.editor.name.fontSize")
+    @NumberRange(range = {1, Integer.MAX_VALUE})
     public int fontSize = 9;
 
     @Configurable(name = "ldlib.gui.editor.name.color")
@@ -43,6 +42,9 @@ public class TextBoxWidget extends Widget implements IConfigurableWidget {
 
     @Configurable(name = "ldlib.gui.editor.name.isCenter")
     public boolean isCenter = false;
+
+    @Configurable()
+    public boolean constrainWidth = true;
 
     private transient List<String> textLines;
 
@@ -117,6 +119,7 @@ public class TextBoxWidget extends Widget implements IConfigurableWidget {
 
     protected void calculate() {
         if (isRemote()) {
+            if (!constrainWidth) setSizeWidth(getMaxContentWidth());
             this.textLines = new ArrayList<>();
             Font font = Minecraft.getInstance().font;
             this.space = Math.max(space, 0);
