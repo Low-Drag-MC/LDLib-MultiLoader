@@ -25,7 +25,7 @@ public class CodeEditor {
     // runtime
     private List<StyledLine> visibleLinesCache;
 
-    static final List<Character> stopQuickMoveChars = List.of(
+    public static final List<Character> stopQuickMoveChars = List.of(
         ' ',
         '\n',
         '.',
@@ -442,6 +442,26 @@ public class CodeEditor {
 
     public void selectAll() {
         selection = new Selection(new Cursor(0, 0), new Cursor(document.getLineCount() - 1, document.getLine(document.getLineCount() - 1).length()));
+    }
+
+    public void selectWord(Cursor location) {
+        int startCol = location.column();
+        int endCol = location.column();
+        int cursorLine = location.line();
+        String line = getLines().get(cursorLine);
+        while(startCol > 0 && !CodeEditor.stopQuickMoveChars.contains(line.charAt(startCol - 1))) {
+            startCol--;
+        }
+        while(endCol < line.length() && !CodeEditor.stopQuickMoveChars.contains(line.charAt(endCol))) {
+            endCol++;
+        }
+        selection = new Selection(new Cursor(cursorLine, startCol), new Cursor(cursorLine, endCol));
+    }
+
+    public void selectLine(Cursor location) {
+        int cursorLine = location.line();
+        String line = getLines().get(cursorLine);
+        selection = new Selection(new Cursor(cursorLine, 0), new Cursor(cursorLine, line.length()));
     }
 
     // 删除选中内容

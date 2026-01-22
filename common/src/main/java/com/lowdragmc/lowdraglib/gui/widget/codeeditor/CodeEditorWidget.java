@@ -37,6 +37,9 @@ public class CodeEditorWidget extends WidgetGroup {
     protected IGuiTexture yBarF = ColorPattern.T_GRAY.rectTexture().setRadius(2);
     @Setter
     protected Consumer<List<String>> onTextChanged;
+    /// The max amount of time in ms between clicks for it to register as a double click, defaults to 300ms
+    @Setter
+    private long doubleClickMarginMillis = 300;
 
     // runtime
     private boolean isHoveringXBar;
@@ -44,6 +47,8 @@ public class CodeEditorWidget extends WidgetGroup {
     private boolean isDraggingXBar;
     private boolean isDraggingYBar;
     private double lastDeltaX, lastDeltaY;
+    private long lastClickMillis = 0;
+    private int clickCount = 0;
 
     public CodeEditorWidget(int x, int y, int width, int height) {
         super(x, y, width, height);
@@ -105,6 +110,17 @@ public class CodeEditorWidget extends WidgetGroup {
             codeEditor.setCursor(getCursor(mouseX, mouseY));
             codeEditor.startSelection();
             codeEditor.startSelection();
+            if(lastClickMillis + doubleClickMarginMillis >= System.currentTimeMillis()) {
+                clickCount++;
+                if(clickCount == 2) {
+                    codeEditor.selectWord(codeEditor.getCursor());
+                }
+                if(clickCount > 2) {
+                    codeEditor.selectLine(codeEditor.getCursor());
+                }
+            }
+            else clickCount = 1;
+            lastClickMillis = System.currentTimeMillis();
             return true;
         }
         if (isFocus()) {
