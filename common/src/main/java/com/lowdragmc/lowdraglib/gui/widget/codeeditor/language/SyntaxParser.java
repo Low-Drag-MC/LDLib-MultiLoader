@@ -25,7 +25,8 @@ public class SyntaxParser {
         while (matcher.find()) {
             String text = matcher.group();
             TokenType type = languageDefinition.getTokenType(matcher);
-            tokens.add(new Token(text, type, matcher.start(), matcher.end()));
+            if(type != null) tokens.add(new Token(text, type, matcher.start(), matcher.end()));
+            else tokens.add(new Token(text, new TokenType(""), matcher.start(), matcher.end()));
         }
 
         return tokens;

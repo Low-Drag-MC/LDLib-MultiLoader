@@ -14,7 +14,7 @@ public class LanguageDefinition implements ILanguageDefinition {
     private final String name;
     private final List<TokenType> typesInOrder;
     private final Set<String> indentations;
-    private Pattern tokenPattern;
+    protected Pattern tokenPattern;
 
     public LanguageDefinition(String name, List<TokenType> typesInOrder, Set<String> indentations) {
         this.name = name;

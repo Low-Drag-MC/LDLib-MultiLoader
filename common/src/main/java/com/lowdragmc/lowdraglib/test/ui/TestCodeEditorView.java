@@ -12,7 +12,9 @@ import net.minecraft.world.entity.player.Player;
 public class TestCodeEditorView implements IUITest {
     @Override
     public ModularUI createUI(IUIHolder holder, Player entityPlayer) {
+        CodeEditorWidget cew = new CodeEditorWidget(0, 0, 200, 100);
+        cew.codeEditor.setLanguageDefinitionUnformatted();
         return IUITest.super.createUI(holder, entityPlayer)
-                .widget(new CodeEditorWidget(0, 0, 200, 100));
+                .widget(cew);
     }
 }
