@@ -1,5 +1,8 @@
 # ChangeLogs
 
+## v1.0.50
+* Added ColorRectAndBorderTexture for ease of making simple solid fill, solid boarder resources.
+
 ## v1.0.49
 * Added an option to DraggableScrollableWidgetGroup to allow shift-scrolling to scroll in the perpendicular direction to the normal scroll direction
 * Added horizontal scrolling to CodeEditorWidget
