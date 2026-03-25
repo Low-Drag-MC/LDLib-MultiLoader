@@ -38,6 +38,7 @@ public class Shaders {
 	public static Shader ROUND_BOX_F;
 	public static Shader PROGRESS_ROUND_BOX_F;
 	public static Shader FRAME_ROUND_BOX_F;
+	public static Shader FILLED_FRAME_ROUND_BOX_F;
 	public static Shader ROUND_LINE_F;
 
 	public static void init() {
@@ -50,6 +51,7 @@ public class Shaders {
 		ROUND_BOX_F = load(Shader.ShaderType.FRAGMENT, new ResourceLocation(LDLib.MOD_ID, "round_box"));
 		PROGRESS_ROUND_BOX_F = load(Shader.ShaderType.FRAGMENT, new ResourceLocation(LDLib.MOD_ID, "progress_round_box"));
 		FRAME_ROUND_BOX_F = load(Shader.ShaderType.FRAGMENT, new ResourceLocation(LDLib.MOD_ID, "frame_round_box"));
+		FILLED_FRAME_ROUND_BOX_F = load(Shader.ShaderType.FRAGMENT, new ResourceLocation(LDLib.MOD_ID, "filled_frame_round_box"));
 		ROUND_LINE_F = load(Shader.ShaderType.FRAGMENT, new ResourceLocation(LDLib.MOD_ID, "round_line"));
 	}
 

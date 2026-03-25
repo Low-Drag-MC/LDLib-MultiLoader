@@ -181,6 +181,7 @@
     "ldlib.gui.editor.register.texture.text_texture": "文本纹理",
     "ldlib.gui.editor.register.texture.color_rect_texture": "彩色矩形纹理",
     "ldlib.gui.editor.register.texture.color_border_texture": "彩色边框纹理",
+    "ldlib.gui.editor.register.texture.color_rect_and_border_texture": "颜色矩形和边框纹理",
     "ldlib.gui.editor.register.texture.animation_texture": "动画纹理",
     "ldlib.gui.editor.register.texture.item_stack_texture": "物品纹理",
     "ldlib.gui.editor.register.texture.shader_texture": "着色器纹理",

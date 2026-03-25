@@ -204,6 +204,7 @@
   "ldlib.gui.editor.register.texture.text_texture": "Text Texture",
   "ldlib.gui.editor.register.texture.color_rect_texture": "Color Rect Texture",
   "ldlib.gui.editor.register.texture.color_border_texture": "Color Border Texture",
+  "ldlib.gui.editor.register.texture.color_rect_and_border_texture": "Color Rect & Border Texture",
   "ldlib.gui.editor.register.texture.animation_texture": "Animation Texture",
   "ldlib.gui.editor.register.texture.item_stack_texture": "Item Stack Texture",
   "ldlib.gui.editor.register.texture.shader_texture": "Shader Texture",

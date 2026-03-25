@@ -49,6 +49,7 @@ public class DrawerHelper {
     public static ShaderProgram ROUND_BOX;
     public static ShaderProgram PROGRESS_ROUND_BOX;
     public static ShaderProgram FRAME_ROUND_BOX;
+    public static ShaderProgram FILLED_FRAME_ROUND_BOX;
     public static ShaderProgram ROUND_LINE;
 
     public static void init() {
@@ -62,6 +63,8 @@ public class DrawerHelper {
                 -> program.attach(Shaders.PROGRESS_ROUND_BOX_F).attach(Shaders.SCREEN_V));
         FRAME_ROUND_BOX = Util.make(new ShaderProgram(), program
                 -> program.attach(Shaders.FRAME_ROUND_BOX_F).attach(Shaders.SCREEN_V));
+        FILLED_FRAME_ROUND_BOX = Util.make(new ShaderProgram(), program
+                -> program.attach(Shaders.FILLED_FRAME_ROUND_BOX_F).attach(Shaders.SCREEN_V));
         ROUND_LINE = Util.make(new ShaderProgram(), program
                 -> program.attach(Shaders.ROUND_LINE_F).attach(Shaders.SCREEN_V));
     }
@@ -393,6 +396,33 @@ public class DrawerHelper {
             uniform.glUniform4F("RoundRadius2", radius2.x() * scale, radius2.y() * scale, radius2.z() * scale, radius2.w() * scale);
             uniform.glUniform1F("Thickness", thickness * scale);
             uniform.fillRGBAColor("Color", color);
+            uniform.glUniform1F("Blur", 2);
+        });
+
+        RenderSystem.enableBlend();
+        uploadScreenPosVertex();
+    }
+
+    public static void drawFilledFrameRoundBox(@Nonnull GuiGraphics graphics, Rect square, float thickness, Vector4f radius, int fillColor, int borderColor) {
+        FILLED_FRAME_ROUND_BOX.use(uniform -> {
+            DrawerHelper.updateScreenVshUniform(graphics, uniform);
+            uniform.glUniformMatrix4F("PoseStack", new Matrix4f());
+
+            var point1 = new Vector4f(square.left - 0.25f, square.up - 0.25f, 0, 1);
+            var point2 = new Vector4f(square.right - 0.25f, square.down - 0.25f, 0, 1);
+            var matrix = graphics.pose().last().pose();
+            point1.mul(matrix);
+            point2.mul(matrix);
+
+            var v1 = matrix.transform(new Vector4f(1, 1, 1, 1));
+            var v2 = matrix.transform(new Vector4f(0, 0, 0, 1));
+            var scale = v1.x - v2.x; // we just use the x scale
+
+            uniform.glUniform4F("SquareVertex", point1.x, point1.y, point2.x, point2.y);
+            uniform.glUniform4F("RoundRadius", radius.x() * scale, radius.y() * scale, radius.z() * scale, radius.w() * scale);
+            uniform.glUniform1F("Thickness", thickness);
+            uniform.fillRGBAColor("FillColor", fillColor);
+            uniform.fillRGBAColor("BorderColor", borderColor);
             uniform.glUniform1F("Blur", 2);
         });
 
