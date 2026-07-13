@@ -1,5 +1,8 @@
 # ChangeLogs
 
+## v1.0.51
+* Fixed bug: LDLibUI.item kubeJS even did not work on dedicated servers.
+
 ## v1.0.50
 * Added ColorRectAndBorderTexture for ease of making simple solid fill, solid boarder resources.
 

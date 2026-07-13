@@ -15,8 +15,8 @@ import net.minecraft.world.level.Level;
 
 public interface UIEvents {
     EventGroup INSTANCE = EventGroup.of("LDLibUI");
-    EventHandler BLOCK = INSTANCE.server("block", () -> BlockUIEventJS.class).extra(Extra.STRING).hasResult();
-    EventHandler ITEM = INSTANCE.server("item", () -> ItemUIEventJS.class).extra(Extra.STRING).hasResult();
+    EventHandler BLOCK = INSTANCE.common("block", () -> BlockUIEventJS.class).extra(Extra.STRING).hasResult();
+    EventHandler ITEM = INSTANCE.common("item", () -> ItemUIEventJS.class).extra(Extra.STRING).hasResult();
 
     @AllArgsConstructor
     @Getter
