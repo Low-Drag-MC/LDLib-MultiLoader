@@ -133,15 +133,6 @@ public class ModularUIGuiContainer extends AbstractContainerScreen<ModularUICont
         modularUI.mainGroup.drawInBackground(graphics, mouseX, mouseY, partialTicks);
         if (Platform.isForge()) ForgeEventHooks.postRenderBackgroundEvent(this, graphics, mouseX, mouseY);
 
-        if (LDLib.isEmiLoaded()) {
-            RenderSystem.enableDepthTest();
-            RenderSystem.depthMask(true);
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            EmiScreenManager.render(EmiDrawContext.wrap(graphics), mouseX, mouseY, partialTicks);
-            RenderSystem.disableDepthTest();
-            RenderSystem.depthMask(false);
-        }
-
         modularUI.mainGroup.drawInForeground(graphics, mouseX, mouseY, partialTicks);
 
         if (draggingElement != null) {
