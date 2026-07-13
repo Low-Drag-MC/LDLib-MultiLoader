@@ -6,6 +6,7 @@ import com.lowdragmc.lowdraglib.gui.modular.IUIHolder;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import dev.latvian.mods.kubejs.level.BlockContainerJS;
+import dev.latvian.mods.kubejs.script.ScriptType;
 import dev.latvian.mods.kubejs.typings.Info;
 import dev.latvian.mods.rhino.util.RemapForJS;
 import net.fabricmc.api.EnvType;
@@ -39,7 +40,7 @@ public class BlockUIJSFactory extends UIFactory<BlockUIJSFactory.BlockAccess> {
         var pos = holder.pos;
         var block = level.getBlockState(pos);
         var blockEntity = level.getBlockEntity(pos);
-        var result = UIEvents.BLOCK.post(new UIEvents.BlockUIEventJS(level, pos, new BlockContainerJS(level, pos), entityPlayer), holder.uiName);
+        var result = UIEvents.BLOCK.post(LDLib.isClient() ? () -> ScriptType.CLIENT : () -> ScriptType.SERVER, holder.uiName, new UIEvents.BlockUIEventJS(level, pos, new BlockContainerJS(level, pos), entityPlayer));
         if (result.value() instanceof WidgetGroup root && !result.interruptFalse() && !result.error()) {
             return new ModularUI(root, new IUIHolder() {
                 @Override

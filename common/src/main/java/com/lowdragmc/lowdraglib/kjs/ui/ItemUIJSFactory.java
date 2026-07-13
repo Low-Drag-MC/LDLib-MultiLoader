@@ -5,6 +5,7 @@ import com.lowdragmc.lowdraglib.gui.factory.UIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.IUIHolder;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import dev.latvian.mods.kubejs.script.ScriptType;
 import dev.latvian.mods.rhino.util.RemapForJS;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -33,7 +34,7 @@ public class ItemUIJSFactory extends UIFactory<ItemUIJSFactory.ItemAccess> {
     @Override
     protected ModularUI createUITemplate(ItemAccess holder, Player entityPlayer) {
         var held = entityPlayer.getItemInHand(holder.hand);
-        var result = UIEvents.ITEM.post(new UIEvents.ItemUIEventJS(entityPlayer, holder.hand, held), holder.uiName);
+        var result = UIEvents.ITEM.post(LDLib.isClient() ? () -> ScriptType.CLIENT : () -> ScriptType.SERVER, holder.uiName, new UIEvents.ItemUIEventJS(entityPlayer, holder.hand, held));
         if (result.value() instanceof WidgetGroup root && !result.interruptFalse() && !result.error()) {
             return new ModularUI(root, new IUIHolder() {
                 @Override
