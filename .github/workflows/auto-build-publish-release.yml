@@ -116,15 +116,6 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
 
-      # ModMenu/EMI are hosted on maven.terraformersmc.com, which is behind Cloudflare and
-      # truncates Gradle's PARALLEL downloads ("Premature end of chunk coded message body").
-      # Loom resolves these mod dependencies at configuration time, so a single-threaded pass
-      # (help) reliably pulls them into the cache; the real parallel build then hits the cache.
-      - name: Warm dependency cache (single-threaded downloads)
-        run: ./gradlew help --max-workers=1 --stacktrace
-        env:
-          GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.internal.repository.max.retries=8 -Dorg.gradle.internal.repository.initial.backoff=1000 -Dorg.gradle.internal.http.connectionTimeout=120000 -Dorg.gradle.internal.http.socketTimeout=120000'
-
       - name: Build
         run: ./gradlew build --stacktrace --parallel
         env:
@@ -165,12 +156,6 @@ jobs:
 
       - name: Grant execute permission
         run: chmod +x gradlew
-
-      # Same Cloudflare workaround as the build job: warm the cache single-threaded first.
-      - name: Warm dependency cache (single-threaded downloads)
-        run: ./gradlew help --max-workers=1 --stacktrace
-        env:
-          GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.internal.repository.max.retries=8 -Dorg.gradle.internal.repository.initial.backoff=1000 -Dorg.gradle.internal.http.connectionTimeout=120000 -Dorg.gradle.internal.http.socketTimeout=120000'
 
       - name: Publish to Maven
         run: ./gradlew publish --stacktrace

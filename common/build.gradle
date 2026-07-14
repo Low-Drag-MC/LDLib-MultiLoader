@@ -21,8 +21,7 @@ loom {
 
 repositories {
     // mavens for Create Fabric and dependencies
-    maven { url = "https://api.modrinth.com/maven" } // LazyDFU
-    maven { url = "https://maven.terraformersmc.com/releases/" } // Mod Menu
+    maven { url = "https://api.modrinth.com/maven" } // LazyDFU, Mod Menu, EMI
     maven { url = "https://mvn.devos.one/snapshots/" } // Create Fabric, Porting Lib, Forge Tags, Milk Lib, Registrate Fabric
     maven { url = "https://cursemaven.com" } // Forge Config API Port
     maven { url = "https://maven.cafeteria.dev/releases" } // Fake Player API
@@ -52,9 +51,8 @@ dependencies {
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-fabric:${rei_version}")
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-fabric:${rei_version}")
 
-    // EMI
-    modCompileOnly("dev.emi:emi-fabric:${emi_version}:api")
-    modCompileOnly("dev.emi:emi-fabric:${emi_version}")
+    // EMI (via Modrinth; terraformersmc maven is unreliable through Gradle — see build workflow)
+    modCompileOnly("maven.modrinth:emi:${emi_version}+fabric")
 
     // KJS
     modCompileOnly("dev.latvian.mods:kubejs-fabric:${kjs_version}")

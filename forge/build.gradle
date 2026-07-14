@@ -69,7 +69,6 @@ configurations {
 repositories {
     // mavens for Forge-exclusives
     maven { url = "https://maven.theillusivec4.top/" } // Curios
-    maven { url = "https://maven.terraformersmc.com/releases/" } // Mod Menu, EMI
     maven { // Create Forge and Registrate Forge
         url = "https://maven.tterrag.com/"
         content {
@@ -102,9 +101,8 @@ dependencies {
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-forge:${rei_version}")
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-forge:${rei_version}")
 
-    // EMI
-    modCompileOnly("dev.emi:emi-forge:${emi_version}:api")
-    modCompileOnly("dev.emi:emi-forge:${emi_version}")
+    // EMI (via Modrinth; terraformersmc maven is unreliable through Gradle — see build workflow)
+    modCompileOnly("maven.modrinth:emi:${emi_version}+forge")
 
     // AE2
     modImplementation("appeng:appliedenergistics2-forge:${ae2_version}")
