@@ -4,65 +4,127 @@ on:
   workflow_dispatch:
     inputs:
       publishMaven:
-        description: 'whether publish to the maven'
+        description: 'Whether to publish to Maven'
         required: true
         type: boolean
         default: true
       publishCurseForgeAndModrinth:
-        description: 'whether publish to the curseforge and modrinth'
+        description: 'Whether to publish to CurseForge and Modrinth'
         required: true
         type: boolean
         default: true
       versionType:
-        description: 'Version type for releases'
-        required: false
+        description: 'Version type'
+        required: true
         type: choice
-        default: 'release'
         options:
-          - release
-          - beta
-          - alpha
+          - 'alpha'
+          - 'beta'
+          - 'release'
+        default: 'release'
+      dryRun:
+        description: 'Dry run (build only, no publishing)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  JAVA_VERSION: '17'
+  JAVA_DISTRIBUTION: 'temurin'
 
 jobs:
-  build:
+  validate:
+    name: Validate & Pre-checks
     runs-on: ubuntu-latest
-    env:
-      MAVEN_PASS: ${{ secrets.MAVEN_PASS }}
-      MAVEN_USER: ${{ secrets.MAVEN_USER }}
-    
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      mc-version: ${{ steps.version.outputs.mc-version }}
+      should-publish: ${{ steps.check.outputs.should-publish }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: true
           fetch-depth: 0
+          fetch-tags: true
 
-      - name: Setup Java
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'gradle'
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
 
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v2
+        uses: gradle/actions/wrapper-validation@v4
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-home-cache-cleanup: true
+          cache-read-only: false
 
-      - name: Grant execute permission for gradlew
+      - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Build project
-        run: ./gradlew build --no-daemon --parallel
+      - name: Get versions from gradle.properties
+        id: version
+        run: |
+          if [ ! -f "gradle.properties" ]; then
+            echo "❌ gradle.properties not found"
+            exit 1
+          fi
+          VERSION=$(grep -E "^mod_version\s*=" gradle.properties | cut -d'=' -f2 | tr -d ' ')
+          MC_VERSION=$(grep -E "^minecraft_version\s*=" gradle.properties | cut -d'=' -f2 | tr -d ' ')
+          if [ -z "$VERSION" ] || [ -z "$MC_VERSION" ]; then
+            echo "❌ Could not find mod_version / minecraft_version in gradle.properties"
+            exit 1
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "mc-version=$MC_VERSION" >> $GITHUB_OUTPUT
+          echo "Mod version: $VERSION (Minecraft $MC_VERSION)"
+
+      - name: Check publish conditions
+        id: check
+        run: |
+          SHOULD_PUBLISH="false"
+          if [[ "${{ inputs.dryRun }}" == "false" && ("${{ inputs.publishMaven }}" == "true" || "${{ inputs.publishCurseForgeAndModrinth }}" == "true") ]]; then
+            SHOULD_PUBLISH="true"
+          fi
+          echo "should-publish=$SHOULD_PUBLISH" >> $GITHUB_OUTPUT
+          echo "Should publish: $SHOULD_PUBLISH"
+
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Build
+        run: ./gradlew build --stacktrace --parallel
         env:
-          GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx2g -XX:MaxMetaspaceSize=512m"
+          # Network resilience: retry flaky artifact downloads (e.g. EMI via terraformersmc/Cloudflare)
+          GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.internal.repository.max.retries=5 -Dorg.gradle.internal.repository.initial.backoff=1000 -Dorg.gradle.internal.http.connectionTimeout=120000 -Dorg.gradle.internal.http.socketTimeout=120000'
 
       - name: Upload build artifacts
-        if: always()
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: build-artifacts
           path: |
@@ -70,27 +132,76 @@ jobs:
             forge/build/libs/
           retention-days: 7
 
-      - name: Publish to Maven
-        if: ${{ inputs.publishMaven }}
-        run: ./gradlew publish --no-daemon
-        env:
-          GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx2g -XX:MaxMetaspaceSize=512m"
+  publish-maven:
+    name: Publish to Maven
+    runs-on: ubuntu-latest
+    needs: [validate, build]
+    if: ${{ needs.validate.outputs.should-publish == 'true' && inputs.publishMaven }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
-      - name: Extract version information
-        if: ${{ inputs.publishCurseForgeAndModrinth }}
-        id: version
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Publish to Maven
+        run: ./gradlew publish --stacktrace
+        env:
+          MAVEN_PASS: ${{ secrets.MAVEN_PASS }}
+          MAVEN_USER: ${{ secrets.MAVEN_USER }}
+          GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.internal.repository.max.retries=5 -Dorg.gradle.internal.repository.initial.backoff=1000 -Dorg.gradle.internal.http.connectionTimeout=120000 -Dorg.gradle.internal.http.socketTimeout=120000'
+
+      - name: Maven publish summary
         run: |
-          FABRIC_VERSION=$(find fabric/build/libs -name "*.jar" -not -name "*sources*" -not -name "*shadow*" -not -name "*dev*" -exec basename {} \; | head -1 | sed 's/ldlib-fabric-\(.*\)\.jar/\1/')
-          FORGE_VERSION=$(find forge/build/libs -name "*.jar" -not -name "*sources*" -not -name "*shadow*" -not -name "*dev*" -exec basename {} \; | head -1 | sed 's/ldlib-forge-\(.*\)\.jar/\1/')
-          
-          echo "fabric_version=$FABRIC_VERSION" >> $GITHUB_OUTPUT
-          echo "forge_version=$FORGE_VERSION" >> $GITHUB_OUTPUT
-          
-          echo "Fabric version: $FABRIC_VERSION"
-          echo "Forge version: $FORGE_VERSION"
+          echo "## Maven Publish Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Version: ${{ needs.validate.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ✅ Published successfully" >> $GITHUB_STEP_SUMMARY
+
+  publish-platforms:
+    name: Publish to CurseForge & Modrinth
+    runs-on: ubuntu-latest
+    needs: [validate, build]
+    if: ${{ needs.validate.outputs.should-publish == 'true' && inputs.publishCurseForgeAndModrinth }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: Verify build artifacts
+        run: |
+          echo "Fabric artifacts:"
+          ls -la fabric/build/libs/ 2>/dev/null || echo "  (none)"
+          echo "Forge artifacts:"
+          ls -la forge/build/libs/ 2>/dev/null || echo "  (none)"
+          if [ -z "$(ls -A fabric/build/libs/*.jar 2>/dev/null)" ] || [ -z "$(ls -A forge/build/libs/*.jar 2>/dev/null)" ]; then
+            echo "❌ Build artifacts not found for one or both loaders!"
+            exit 1
+          fi
+          echo "✅ Build artifacts verified"
 
       - name: Publish to CurseForge and Modrinth (Fabric)
-        if: ${{ inputs.publishCurseForgeAndModrinth }}
         uses: Kir-Antipov/mc-publish@v3.3
         with:
           modrinth-id: B1CBVXHX
@@ -102,22 +213,22 @@ jobs:
             fabric/build/libs/!(*-@(dev|sources|javadoc|dev-shadow)).jar
             fabric/build/libs/*-@(sources|javadoc).jar
 
-          name: LDLib ${{ steps.version.outputs.fabric_version }}-fabric
-          version: mc${{ steps.version.outputs.fabric_version }}-fabric
+          name: LDLib ${{ needs.validate.outputs.mc-version }}-${{ needs.validate.outputs.version }}-fabric
+          version: mc${{ needs.validate.outputs.mc-version }}-${{ needs.validate.outputs.version }}-fabric
           version-type: ${{ inputs.versionType }}
           changelog-file: CHANGELOG.*
 
           loaders: fabric
-          game-versions: ${{ github.ref_name }}
+          game-versions: |
+            ${{ needs.validate.outputs.mc-version }}
           game-version-filter: none
-          java: 17
-          
+          java: |
+            17
           retry-attempts: 3
           retry-delay: 10000
           fail-mode: fail
 
       - name: Publish to CurseForge and Modrinth (Forge)
-        if: ${{ inputs.publishCurseForgeAndModrinth }}
         uses: Kir-Antipov/mc-publish@v3.3
         with:
           modrinth-id: B1CBVXHX
@@ -129,27 +240,98 @@ jobs:
             forge/build/libs/!(*-@(dev|sources|javadoc|dev-shadow)).jar
             forge/build/libs/*-@(sources|javadoc).jar
 
-          name: LDLib ${{ steps.version.outputs.forge_version }}-forge
-          version: mc${{ steps.version.outputs.forge_version }}-forge
+          name: LDLib ${{ needs.validate.outputs.mc-version }}-${{ needs.validate.outputs.version }}-forge
+          version: mc${{ needs.validate.outputs.mc-version }}-${{ needs.validate.outputs.version }}-forge
           version-type: ${{ inputs.versionType }}
           changelog-file: CHANGELOG.*
 
           loaders: forge
-          game-versions: ${{ github.ref_name }}
+          game-versions: |
+            ${{ needs.validate.outputs.mc-version }}
           game-version-filter: none
-          java: 17
-          
+          java: |
+            17
           retry-attempts: 3
           retry-delay: 10000
           fail-mode: fail
 
-      - name: Create release summary
-        if: ${{ inputs.publishCurseForgeAndModrinth }}
+      - name: Platform publish summary
         run: |
-          echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Fabric Version**: ${{ steps.version.outputs.fabric_version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Forge Version**: ${{ steps.version.outputs.forge_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "## Platform Publish Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Version: ${{ needs.validate.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Version Type: ${{ inputs.versionType }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Loaders: Fabric & Forge" >> $GITHUB_STEP_SUMMARY
+          echo "- Platforms: CurseForge & Modrinth" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ✅ Published successfully" >> $GITHUB_STEP_SUMMARY
+
+  summary:
+    name: Build & Publish Summary
+    runs-on: ubuntu-latest
+    needs: [validate, build, publish-maven, publish-platforms]
+    if: always()
+    steps:
+      - name: Generate final summary
+        run: |
+          echo "# 🚀 Build & Publish Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📋 Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ needs.validate.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Minecraft**: ${{ needs.validate.outputs.mc-version }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Version Type**: ${{ inputs.versionType }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Game Version**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Maven Published**: ${{ inputs.publishMaven }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Mod Platforms Published**: ${{ inputs.publishCurseForgeAndModrinth }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dry Run**: ${{ inputs.dryRun }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Maven Publish**: ${{ inputs.publishMaven }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Platform Publish**: ${{ inputs.publishCurseForgeAndModrinth }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 Job Results" >> $GITHUB_STEP_SUMMARY
+
+          VALIDATE_STATUS="${{ needs.validate.result }}"
+          BUILD_STATUS="${{ needs.build.result }}"
+          MAVEN_STATUS="${{ needs.publish-maven.result }}"
+          PLATFORM_STATUS="${{ needs.publish-platforms.result }}"
+
+          echo "- **Validation**: $([ "$VALIDATE_STATUS" == "success" ] && echo "✅ Success" || echo "❌ $VALIDATE_STATUS")" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build**: $([ "$BUILD_STATUS" == "success" ] && echo "✅ Success" || echo "❌ $BUILD_STATUS")" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ inputs.publishMaven }}" == "true" && "${{ inputs.dryRun }}" == "false" ]]; then
+            echo "- **Maven Publish**: $([ "$MAVEN_STATUS" == "success" ] && echo "✅ Success" || echo "❌ $MAVEN_STATUS")" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ inputs.publishCurseForgeAndModrinth }}" == "true" && "${{ inputs.dryRun }}" == "false" ]]; then
+            echo "- **Platform Publish**: $([ "$PLATFORM_STATUS" == "success" ] && echo "✅ Success" || echo "❌ $PLATFORM_STATUS")" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "$BUILD_STATUS" == "success" ]]; then
+            if [[ "${{ inputs.dryRun }}" == "true" ]]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "## 🔍 Dry Run Completed" >> $GITHUB_STEP_SUMMARY
+              echo "Build completed successfully. No publishing was performed." >> $GITHUB_STEP_SUMMARY
+            else
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "## 🎉 All Operations Completed Successfully!" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## ❌ Some Operations Failed" >> $GITHUB_STEP_SUMMARY
+            echo "Please check the job logs for details." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check overall status
+        run: |
+          if [[ "${{ needs.build.result }}" != "success" ]]; then
+            echo "Build failed, marking workflow as failed"
+            exit 1
+          fi
+
+          if [[ "${{ inputs.dryRun }}" == "false" ]]; then
+            if [[ "${{ inputs.publishMaven }}" == "true" && "${{ needs.publish-maven.result }}" != "success" ]]; then
+              echo "Maven publish failed, marking workflow as failed"
+              exit 1
+            fi
+
+            if [[ "${{ inputs.publishCurseForgeAndModrinth }}" == "true" && "${{ needs.publish-platforms.result }}" != "success" ]]; then
+              echo "Platform publish failed, marking workflow as failed"
+              exit 1
+            fi
+          fi
+
+          echo "All requested operations completed successfully!"
