@@ -809,6 +809,13 @@ public abstract class WorldSceneRenderer {
 
             //retrieve depth from buffer (0.0-1.0f)
             pixelDepth = PIXEL_DEPTH_BUFFER.get();
+            // Some drivers/wrappers (notably OpenGL ES on Android) return 0 for depth
+            // readback from the main framebuffer without raising a GL error. A depth of 0
+            // unprojects to the near plane, making the ray too short to hit anything, so
+            // fall back to the far plane (same value used when checkDepth is false).
+            if (pixelDepth <= 0.0f) {
+                pixelDepth = 0.999f;
+            }
         }
 
         //rewind buffer after read
